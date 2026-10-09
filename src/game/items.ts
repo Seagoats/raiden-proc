@@ -109,8 +109,6 @@ export const AFFIXES: AffixDef[] = [
     roll: (r, l) => pct(r, 6, 20, l), text: (v) => `ALL COOLDOWNS -${v}%` },
   { id: "elite", slots: ["wings", "hull", "main", "ord"], weight: 5, stat: "elite", kind: "inc", prefix: "Giantslayer", suffix: "of the Hunt",
     roll: (r, l) => pct(r, 20, 60, l), text: (v) => `+${v}% DAMAGE VS ELITES` },
-  { id: "mf", slots: ["hull", "engine", "wings"], weight: 5, stat: "mf", kind: "inc", prefix: "Lucky", suffix: "of Fortune",
-    roll: (r, l) => pct(r, 10, 35, l), text: (v) => `+${v}% MAGIC FIND` },
   // Defensive.
   { id: "shields", slots: ["hull"], weight: 6, stat: "shields", kind: "flat", prefix: "Warded", suffix: "of the Aegis",
     roll: () => 1, text: (v) => `+${v} SHIELD CHARGE` },
@@ -242,16 +240,15 @@ let nextId = Date.now() % 1e9;
 export function setNextId(n: number) { nextId = Math.max(nextId, n); }
 export function newId() { return ++nextId; }
 
-export interface DropContext { ilvl: number; tier: number; mf: number; bonusRarity?: number; slotBias?: Slot[] }
+export interface DropContext { ilvl: number; tier: number; bonusRarity?: number; slotBias?: Slot[] }
 
 /** Roll a fresh item drop. */
 export function rollDrop(r: Rng, ctx: DropContext): Item {
-  const mf = 1 + ctx.mf / 100;
   const rarity = weighted<Rarity>(r, [
-    [Rarity.Common, 60 / mf],
+    [Rarity.Common, 60],
     [Rarity.Magic, 32],
-    [Rarity.Rare, 9 * mf + (ctx.bonusRarity ?? 0) * 10],
-    [Rarity.Unique, (0.9 + ctx.tier * 0.5) * mf + (ctx.bonusRarity ?? 0) * 2],
+    [Rarity.Rare, 9 + (ctx.bonusRarity ?? 0) * 10],
+    [Rarity.Unique, 0.9 + ctx.tier * 0.5 + (ctx.bonusRarity ?? 0) * 2],
   ]);
   const seed = Math.floor(r() * 2 ** 31);
   if (rarity === Rarity.Unique) {

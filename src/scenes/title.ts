@@ -3,7 +3,7 @@ import { ctx, W, H } from "../gfx/screen";
 import { text } from "../gfx/font";
 import { img } from "../gfx/assets";
 import { mouse, pressed, repeat } from "../core/input";
-import { sfx, playSong, ambience } from "../core/audio";
+import { sfx, playSong } from "../core/audio";
 import { resetProfile } from "../game/save";
 import { setScene, type Scene } from "./scene";
 import { HangarScene } from "./hangar";
@@ -15,7 +15,6 @@ export class TitleScene implements Scene {
 
   enter() {
     playSong("hangar");
-    ambience("amb_sea", 0.5);
   }
 
   update() {
@@ -50,7 +49,7 @@ export class TitleScene implements Scene {
       text((sel ? "> " : "  ") + s, W / 2, 304 + i * 16, { align: "center", color: sel ? (this.t % 30 < 15 ? "#ffe040" : "#fff") : "#aab" });
     });
     text("ENEMY SHIPS: GRAFTWING BY TSTONE", W / 2, H - 42, { align: "center", color: "#8899bb" });
-    text("VOICES: DILLON BECKER (CC BY 4.0)", W / 2, H - 30, { align: "center", color: "#8899bb" });
-    text("SFX: CHEQUERED INK, NOX  -  ART: CODEX", W / 2, H - 18, { align: "center", color: "#667799" });
+    text("ART: CODEX  -  SFX: CHEQUERED INK", W / 2, H - 30, { align: "center", color: "#8899bb" });
+    text("ARROWS  Z FIRE  X BOMB  SHIFT SLOW", W / 2, H - 18, { align: "center", color: "#667799" });
   }
 }

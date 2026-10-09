@@ -4,7 +4,7 @@ import { text } from "../gfx/font";
 import { img } from "../gfx/assets";
 import { BULLET, BULLET_KINDS } from "../gfx/sprites";
 import { isHeld, pressed, repeat } from "../core/input";
-import { sfx, playSong, ambience } from "../core/audio";
+import { sfx, playSong } from "../core/audio";
 import { World, Shot, type Enemy, type Pickup } from "../game/world";
 import { drawBackground, setupStage } from "../game/stage1";
 import { ENEMY_SHIP_KINDS, enemyShip } from "../game/enemies";
@@ -25,7 +25,6 @@ export class StageScene implements Scene {
 
   enter() {
     playSong(null);
-    ambience("amb_sea", 0.45);
   }
 
   update() {
@@ -350,7 +349,7 @@ export class StageScene implements Scene {
   drawHud() {
     const w = this.w;
     text(String(w.score).padStart(8, "0"), 4, 3, { color: "#fff" });
-    if (w.chain > 0) text(`CHAIN ${w.chain}  MF+${w.mf}%`, W / 2, 3, { align: "center", color: "#ffd040" });
+    if (w.chain > 0) text(`CHAIN ${w.chain}`, W / 2, 3, { align: "center", color: "#ffd040" });
     text(tierName(w.tier), W - 4, 3, { align: "right", color: w.tier ? "#ff6060" : "#a0c0ff" });
     if (w.boss) {
       const b = w.boss;

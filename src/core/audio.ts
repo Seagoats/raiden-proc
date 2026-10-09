@@ -24,16 +24,13 @@ export function unlock() {
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   if (pendingSong) playSong(pendingSong);
   decodeSamples();
-  if (pendingAmb) ambience(pendingAmb);
 }
 
 // ---------------------------------------------------------------- samples (free packs, see CREDITS.md)
 
 const SAMPLE_NAMES = [
   "pop", "boom", "bigboom", "blast", "pickup", "bombup", "draft", "medal", "loot", "lootrare", "hurt", "shield",
-  "select", "move", "deny", "confirm", "equip", "scrap", "alarm", "whoosh", "jingle_start", "jingle_clear", "jingle_fail",
-  "v_getready", "v_letsgo", "v_yougotit", "v_enemy", "v_attack", "v_lowhp", "v_complete", "v_gameover", "v_highscore",
-  "v_negative", "v_welcome", "p_woo", "p_hit1", "p_hit2", "p_hit3", "p_death", "amb_sea", "amb_hangar",
+  "select", "move", "deny", "confirm", "equip", "scrap", "alarm", "whoosh",
 ] as const;
 export type SampleName = (typeof SAMPLE_NAMES)[number];
 const raw = new Map<string, ArrayBuffer>();
@@ -52,7 +49,7 @@ function decodeSamples() {
   if (!ac) return;
   for (const [n, b] of raw) {
     raw.delete(n);
-    ac.decodeAudioData(b).then((buf) => { buffers.set(n, buf); if (n === pendingAmb) ambience(pendingAmb); }).catch(() => {});
+    ac.decodeAudioData(b).then((buf) => buffers.set(n, buf)).catch(() => {});
   }
 }
 
@@ -69,60 +66,6 @@ function play(name: string, opts: { rate?: number; vol?: number; bus?: GainNode;
   return src;
 }
 
-/** Radio voice: squelch clicks, ducked music, one line at a time (higher priority interrupts). */
-let voiceUntil = 0;
-let voicePri = 0;
-let voiceSrc: AudioBufferSourceNode | null = null;
-export function voice(name: SampleName, priority = 1, radio = name.startsWith("v_")) {
-  if (!ac || !buffers.get(name)) return;
-  const t = ac.currentTime;
-  if (t < voiceUntil && priority <= voicePri) return;
-  try { voiceSrc?.stop(); } catch { /* already stopped */ }
-  const dur = buffers.get(name)!.duration;
-  const start = t + (radio ? 0.06 : 0);
-  if (radio) {
-    noise(sfxBus, t, 0.05, 0.12, "bandpass", 2500, 2500, 2);
-    noise(sfxBus, start + dur, 0.07, 0.1, "bandpass", 1800, 1800, 2);
-  }
-  voiceSrc = play(name, { vol: radio ? 1.1 : 0.9, when: start });
-  voiceUntil = start + dur + 0.1;
-  voicePri = priority;
-  // Duck the music under the line.
-  musicBus.gain.cancelScheduledValues(t);
-  musicBus.gain.setTargetAtTime(volume.music * 0.18, t, 0.05);
-  musicBus.gain.setTargetAtTime(volume.music * 0.5, voiceUntil, 0.25);
-}
-
-/** Looping ambience bed with a crossfade. */
-let ambSrc: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
-let ambName: string | null = null;
-let pendingAmb: SampleName | null = null;
-export function ambience(name: SampleName | null, vol = 0.55) {
-  pendingAmb = name;
-  if (!ac || name === ambName && ambSrc) return;
-  const t = ac.currentTime;
-  if (ambSrc) {
-    const old = ambSrc;
-    old.gain.gain.setTargetAtTime(0, t, 0.4);
-    setTimeout(() => { try { old.src.stop(); } catch { /* done */ } }, 2500);
-    ambSrc = null;
-  }
-  ambName = null;
-  const buf = name && buffers.get(name);
-  if (!buf) return;
-  const src = ac.createBufferSource();
-  src.buffer = buf;
-  src.loop = true;
-  src.loopStart = 0.03;
-  src.loopEnd = buf.duration - 0.03;
-  const gain = ac.createGain();
-  gain.gain.setValueAtTime(0, t);
-  gain.gain.setTargetAtTime(vol, t, 0.5);
-  src.connect(gain).connect(sfxBus);
-  src.start(t);
-  ambSrc = { src, gain };
-  ambName = name;
-}
 window.addEventListener("keydown", unlock);
 window.addEventListener("mousedown", unlock);
 window.addEventListener("touchstart", unlock);
@@ -170,7 +113,7 @@ function noise(bus: GainNode, t0: number, dur: number, vol: number, filter: Biqu
 export type Sfx =
   | "shot" | "laser" | "missile" | "hit" | "pop" | "boom" | "bigboom" | "pickup" | "medal" | "drop"
   | "loot" | "draft" | "bomb" | "warning" | "hurt" | "shield" | "select" | "move" | "cue" | "deny" | "launch"
-  | "confirm" | "equip" | "scrap" | "bombup" | "blast" | "jingle_start" | "jingle_clear" | "jingle_fail";
+  | "confirm" | "equip" | "scrap" | "bombup" | "blast";
 
 /** Which sound effects come from samples; anything missing falls back to the synth. */
 function sampled(name: Sfx, p: number, t: number): boolean {
@@ -206,7 +149,6 @@ function sampled(name: Sfx, p: number, t: number): boolean {
       if (ok) { play("bigboom", { vol: 1, rate: 0.8, when: t + 0.62 }); tone(sfxBus, "sine", 70, 25, t + 0.6, 1.5, 0.6); }
       return ok;
     }
-    case "jingle_start": case "jingle_clear": case "jingle_fail": return !!play(name, { vol: 0.8 });
     default: return false;
   }
 }

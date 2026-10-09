@@ -29,7 +29,7 @@ Touch: drag anywhere to fly (auto-fire), tap with a second finger to bomb.
   with "numbers that sound broken" rolls. The stat pipeline runs base → weapon affixes → part globals → in-run
   (inc adds within a layer, layers and "more" multiply).
 - **In-run:** P items, colour-cycling draft pickups (grab it while it shows the upgrade you want), bombs, a Raiden DX
-  medal chain that drives magic find, loot capsules with rarity beams.
+  medal chain for score, loot capsules with rarity beams.
 - **Durability:** hit pips, regenerating shield charges, i-frames, an always-visible hitbox core, precision mode.
   A hull hit costs one P level.
 - **Hell tiers:** clearing a tier unlocks the next: more HP, denser bullets, higher item levels, and enemy affixes
@@ -44,9 +44,8 @@ Touch: drag anywhere to fly (auto-fire), tap with a second finger to bomb.
 - **Art:** stage backgrounds, carrier, boss, boats, turrets, explosions, icons, player parts, title and hangar were
   generated with Codex (`art/assets.json` holds the prompts) and converted to 15-bit SNES palettes by `art/process.py`.
 
-- **Audio:** Chequered Ink's 400 Sounds Pack (SFX and jingles), Dillon Becker's Super Dialogue Audio Pack (CC BY 4.0,
-  ops radio callouts and pilot voice) and NOX Sound ambience (CC0), all processed by `art/sounds.py`. Music is a
-  runtime chip synth. Full attributions in [CREDITS.md](./CREDITS.md).
+- **Audio:** explosions, pickups and UI from Chequered Ink's 400 Sounds Pack, processed by `art/sounds.py`. Weapon fire
+  and music are a runtime chip synth. Attributions in [CREDITS.md](./CREDITS.md).
 
 ## Development
 
@@ -58,8 +57,7 @@ npm run dev
 
 Regenerating art needs the Codex CLI: `python3 art/gen.py [names...]` writes `art/raw/` (gitignored), then
 `art/.venv/bin/python art/process.py` rebuilds `public/assets/` (`pip install pillow numpy scipy`).
-Audio: `python3 art/sounds.py <400 Sounds Pack.zip> <Super Dialogue Audio Pack v1.zip> <Essentials_Series_NOX_SOUND.zip>`
-(needs ffmpeg) rebuilds `public/sfx/`.
+Audio: `python3 art/sounds.py <400 Sounds Pack.zip>` (needs ffmpeg) rebuilds `public/sfx/`.
 
 **Local music overrides:** drop `stage.mp3`, `boss.mp3` and/or `hangar.mp3` into `public/music-local/` to replace the
 synth tracks while running locally. That folder is gitignored and never deployed; use it for reference tracks you

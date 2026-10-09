@@ -49,7 +49,6 @@ export interface Build {
   precision: number;
   weapons: WeaponStats[];
   bomb: { type: BombType; stock: number; damage: number; flags: Set<string> } | null;
-  mf: number;
   killburst: number;
   flags: Set<string>;
   look: PlayerLook;
@@ -151,7 +150,6 @@ export function computeBuild(stash: Map<number, Item>, lo: Loadout, run: RunMods
     precision: 1.05 * (wd?.precision ?? 1) * parts.i("precision"),
     weapons,
     bomb,
-    mf: (parts.inc.get("mf") ?? 0),
     killburst: parts.inc.get("killburst") ?? 0,
     flags: new Set([...parts.flags, ...(hullR ? [] : [])]),
     mainSlots,

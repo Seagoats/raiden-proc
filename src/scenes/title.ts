@@ -43,6 +43,11 @@ export class TitleScene implements Scene {
     text("RAIDEN", W / 2 + 2, 54 + bob + 2, { align: "center", scale: 5, color: "#401000", shadow: null });
     text("RAIDEN", W / 2, 54 + bob, { align: "center", scale: 5, color: "#ffd040", shadow: "#a02000" });
     text("SHMUP LOOTER  -  PROTOTYPE 0", W / 2, 100, { align: "center", color: "#fff" });
+    // Fan-project notice, on a dark band so it reads over the key art.
+    ctx.fillStyle = "rgba(0,0,20,0.6)";
+    ctx.fillRect(0, 111, W, 22);
+    text("UNOFFICIAL FAN PROJECT - INSPIRED BY RAIDEN", W / 2, 113, { align: "center", color: "#ffd890" });
+    text("NOT AFFILIATED WITH SEIBU KAIHATSU OR MOSS", W / 2, 123, { align: "center", color: "#b0b8d0" });
     const items = ["START", this.confirm ? "REALLY WIPE THE HANGAR?" : "RESET SAVE"];
     items.forEach((s, i) => {
       const sel = i === this.menu;

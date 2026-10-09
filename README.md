@@ -1,5 +1,7 @@
 # Project Raiden: Shmup Looter — Prototype 0
 
+> Unofficial fan project inspired by the Raiden games. Not affiliated with or endorsed by Seibu Kaihatsu or MOSS.
+
 A Raiden DX-style vertical shmup where every part of your fighter is loot. SNES-fidelity HTML5 canvas prototype of
 [the design doc](./Project%20Raiden%20Shmup%20Looter%20—%20Game%20Design%20Doc.md): Biome 1 level 1 (Coastal Launch),
 hangar with an energy budget, seeded loot with affixes, Hell tiers.

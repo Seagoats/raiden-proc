@@ -227,6 +227,8 @@ export function setupLevel(w: World) {
   const r = levelSeed(level, w.tier);
   prepareBackground(level);
   w.scrollTarget = SCROLL;
+  // The stage track starts with the sortie, on the carrier deck.
+  playSong("stage");
   if (biome.carrier) {
     const carrier = img.carrier;
     w.bg.push({ img: carrier, x: W / 2 - carrier.width / 2, y: H - 120 - carrier.height * 0.8, speed: 1, layer: "sea", carrier: true });
@@ -245,7 +247,6 @@ export function setupLevel(w: World) {
   const gap = 3.2 / w.diff.spawnMul;
   let t = 1.5;
   let nextCourier = 6;
-  at(0.1, () => playSong("stage"));
   while (t < end) {
     if (t >= nextCourier) {
       const carry: "P" | "B" | "D" = D >= 1 && r() < 0.2 ? "D" : r() < 0.25 ? "B" : "P";

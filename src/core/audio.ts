@@ -22,8 +22,9 @@ export function unlock() {
   noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
   const d = noiseBuf.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  if (pendingSong) playSong(pendingSong);
   decodeSamples();
+  for (const n of trackUrl.keys()) decodeTrack(n);
+  if (pendingSong) playSong(pendingSong);
 }
 
 // ---------------------------------------------------------------- samples (free packs, see CREDITS.md)
@@ -259,32 +260,66 @@ async function probe(url: string) {
     return false;
   }
 }
+const trackData = new Map<string, Promise<ArrayBuffer | null>>();
+const trackBuf = new Map<string, Promise<AudioBuffer | null>>();
+
+/** Find each song's file and start downloading it; decoding waits until audio is unlocked. */
 export function preloadMusic(): Promise<void> {
   return Promise.all(SONG_FILES.map(async (n) => {
     for (const dir of ["music-local", "music"]) {
-      if (await probe(`${dir}/${n}.mp3`)) { trackUrl.set(n, `${dir}/${n}.mp3`); return; }
+      if (await probe(`${dir}/${n}.mp3`)) {
+        trackUrl.set(n, `${dir}/${n}.mp3`);
+        trackData.set(n, fetch(`${dir}/${n}.mp3`).then((r) => r.arrayBuffer()).catch(() => null));
+        return;
+      }
     }
-  })).then(() => undefined);
+  })).then(() => { if (ac) for (const n of trackUrl.keys()) decodeTrack(n); });
 }
-let local: { el: HTMLAudioElement; gain: GainNode } | null = null;
+
+/**
+ * Tracks are decoded into AudioBuffers and played through the unlocked AudioContext, like the
+ * sound effects. (An <audio> element started outside a user gesture can be silently blocked.)
+ */
+function decodeTrack(name: string): Promise<AudioBuffer | null> {
+  let p = trackBuf.get(name);
+  if (!p && ac) {
+    const ctx = ac;
+    p = (trackData.get(name) ?? Promise.resolve(null)).then((d) => (d ? ctx.decodeAudioData(d) : null)).catch(() => null);
+    trackBuf.set(name, p);
+  }
+  return p ?? Promise.resolve(null);
+}
+
+let local: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+let musicToken = 0;
 
 function stopLocal() {
+  musicToken++;
   if (!local || !ac) return;
-  const { el, gain } = local;
+  const { src, gain } = local;
   gain.gain.setTargetAtTime(0, ac.currentTime, 0.15);
-  setTimeout(() => el.pause(), 800);
+  src.stop(ac.currentTime + 0.8);
   local = null;
 }
 
 function startLocal(name: string) {
-  const el = new Audio(trackUrl.get(name)!);
-  el.loop = true;
-  const gain = ac!.createGain();
-  gain.gain.value = 0.55; // Mastered tracks run much hotter than the synth.
-  ac!.createMediaElementSource(el).connect(gain).connect(musicBus);
-  el.play().catch(() => {});
-  local = { el, gain };
+  const token = ++musicToken;
+  void decodeTrack(name).then((buf) => {
+    // Bail if the song changed while decoding.
+    if (!buf || !ac || token !== musicToken) return;
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const gain = ac.createGain();
+    gain.gain.value = 0.55; // Mastered tracks run much hotter than the synth.
+    src.connect(gain).connect(musicBus);
+    src.start();
+    local = { src, gain };
+  });
 }
+
+/** Diagnostics: which song is current and whether a recorded track is playing. */
+export const musicState = () => ({ current, recorded: !!local, tracks: [...trackUrl.entries()] });
 
 export function playSong(name: string | null) {
   pendingSong = name;

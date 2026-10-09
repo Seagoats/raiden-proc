@@ -151,6 +151,132 @@
    "keyed": false,
    "prompt": "Stormy dark ocean: deep navy and slate blue water with large whitecaps and foam streaks, ominous dark patches of cloud shadow, debris of floating wreckage, dramatic mood. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI.",
    "ref": "bg_01"
+  },
+  {
+   "name": "world_map",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A military campaign world map screen for a vertical shoot-em-up, top-down SNES pixel-art overworld style like Super Mario World, Axelay and Raiden map screens. Four clearly separated regions from bottom to top: (1) the bottom quarter is a temperate green coastline with beaches, a naval harbor and an aircraft carrier fleet in blue water; (2) the left-middle is a dark ocean archipelago of smoking black volcanic islands with glowing lava; (3) the upper-right is a grey industrial enemy research complex with factories and smokestacks and a floating sky fortress above white clouds; (4) the top band of the image fades into black outer space with stars and the curve of the planet, as if the map reaches orbit. Faint dotted flight paths connect the regions. No text, no labels, no UI, no border."
+  },
+  {
+   "name": "b2_01",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "Dark volcanic sea: deep teal-black ocean with steam vents, floating pumice and a faint orange glow of submerged lava under the water; mostly open water because this strip repeats. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open dark volcanic sea water only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly."
+  },
+  {
+   "name": "b2_02",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "Black volcanic islands with rivers of glowing orange lava pouring into the sea, white steam clouds where lava meets water, ash-covered rocks. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open dark volcanic sea water only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b2_01"
+  },
+  {
+   "name": "b2_03",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A large active volcano crater island: glowing lava lake in the crater, ash slopes, enemy mining rigs and conveyor belts on the slopes, steam. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open dark volcanic sea water only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b2_01"
+  },
+  {
+   "name": "b2_04",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "An obsidian reef with an enemy geothermal power plant: pipelines, cooling towers, lava channels and steam vents, dark rocks. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open dark volcanic sea water only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b2_01"
+  },
+  {
+   "name": "b2_05",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "An ominous boiling sea arena: churning dark water with whirlpools, glowing magma cracks on the sea floor visible through the water, drifting ash. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open dark volcanic sea water only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b2_01"
+  },
+  {
+   "name": "b3_01",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A sea of clouds seen from very high above: soft white and lavender cloud tops with a few gaps showing distant green ground far below; mostly open clouds because this strip repeats. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open white cloud tops only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly."
+  },
+  {
+   "name": "b3_02",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "An enemy flying research fortress hull floating over the clouds: grey and dark-red armored plating, hangar bays, antennae and warning lights. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open white cloud tops only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b3_01"
+  },
+  {
+   "name": "b3_03",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "An industrial sky platform floating above the clouds: factories, smokestacks with smoke, conveyor bridges, catwalks and gun emplacements. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open white cloud tops only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b3_01"
+  },
+  {
+   "name": "b3_04",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "An enemy weapons test range on a giant floating metal platform above the clouds: target grids, missile silos, radar arrays, reactors glowing cyan. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open white cloud tops only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b3_01"
+  },
+  {
+   "name": "b3_05",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "The heart of the sky fortress above the clouds: a giant circular reactor housing with glowing red energy conduits and armored plates radiating outward. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be open white cloud tops only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b3_01"
+  },
+  {
+   "name": "b4_01",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "Deep space starfield with faint purple and blue nebula wisps, sparse twinkling stars, mostly empty because this strip repeats. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be plain dark starfield only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly."
+  },
+  {
+   "name": "b4_02",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A space debris field: wrecked spaceship hulls, tumbling grey asteroids and twisted metal girders floating in space. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be plain dark starfield only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b4_01"
+  },
+  {
+   "name": "b4_03",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "High orbit: the curved edge of a blue planet with swirling clouds along one side, satellites and a destroyed space station drifting nearby. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be plain dark starfield only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b4_01"
+  },
+  {
+   "name": "b4_04",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A dense asteroid belt with glowing magenta crystal asteroids and small enemy mining drones and rigs anchored to rocks. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be plain dark starfield only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b4_01"
+  },
+  {
+   "name": "b4_05",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "The approach to an enormous alien-mechanical core structure: concentric rings of dark metal with glowing red energy lines converging toward the center. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered shading, tiny detailed structures, strong top-left lighting. No aircraft, no text, no UI. IMPORTANT: the top 12% and bottom 12% of the image must be plain dark starfield only (nothing else touching the top or bottom edge) so strips can be stacked seamlessly.",
+   "ref": "b4_01"
+  },
+  {
+   "name": "boss_serpent",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A colossal mechanical sea serpent: its armored head and front body, jaws open pointing DOWN, dark teal metal scales with glowing orange lava vents, a glowing magma core between the eyes. Seen from directly above, the front pointing DOWN toward the bottom of the image, perfectly symmetric left-right, chunky mechanical shoot-em-up boss, with FOUR EMPTY circular turret mounting rings (no turrets on them) arranged symmetrically."
+  },
+  {
+   "name": "boss_fortress",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A massive flying fortress-core warship: dark grey and crimson armor plates, a central glowing cyan reactor eye, many vents and antennae, stubby armored wings. Seen from directly above, the front pointing DOWN toward the bottom of the image, perfectly symmetric left-right, chunky mechanical shoot-em-up boss, with FOUR EMPTY circular turret mounting rings (no turrets on them) arranged symmetrically."
+  },
+  {
+   "name": "boss_core",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "The Core: an enormous alien-mechanical spherical core machine, concentric armored rings of dark purple and black metal around a pulsing red energy heart, cables and tendrils. Seen from directly above, the front pointing DOWN toward the bottom of the image, perfectly symmetric left-right, chunky mechanical shoot-em-up boss, with FOUR EMPTY circular turret mounting rings (no turrets on them) arranged symmetrically."
   }
  ]
 }

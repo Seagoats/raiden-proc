@@ -154,7 +154,7 @@ export function buildPlayerShip(look: PlayerLook): PlayerShipSprite {
 
 // ---------------------------------------------------------------- enemies (Graftwing)
 
-export interface EnemyLookSpec { seed: number; size: number; style: number; power: number; hue: number; sat: number; bright: number; big: boolean }
+export interface EnemyLookSpec { seed: number; size: number; style: number; power: number; hue: number; sat: number; bright: number; big: boolean; huge?: boolean }
 
 export function buildEnemyShip(s: EnemyLookSpec): Sprite {
   const ship = buildShip({
@@ -162,8 +162,8 @@ export function buildEnemyShip(s: EnemyLookSpec): Sprite {
     wings: { seed: s.seed + 1, style: s.style },
     engines: { seed: s.seed + 2, power: s.power },
     paint: { hue: s.hue, saturation: s.sat, brightness: s.bright, mech: 20 },
-    maxW: s.big ? 64 : 34,
-    maxH: s.big ? 60 : 34,
+    maxW: s.huge ? 84 : s.big ? 64 : 34,
+    maxH: s.huge ? 76 : s.big ? 60 : 34,
     small: !s.big,
   });
   return toSprite(gwToCanvas(ship.frames[1][0], true));

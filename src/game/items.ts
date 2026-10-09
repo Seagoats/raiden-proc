@@ -41,22 +41,28 @@ export interface BaseDef {
 }
 
 export const BASES: Record<string, BaseDef> = {
-  wasp: { slot: "hull", name: "Wasp Frame", icon: 0, energy: 0, size: 0, capacity: 11, hp: 2, shields: 1, hitbox: 1.5 },
-  falcon: { slot: "hull", name: "Falcon Frame", icon: 0, energy: 0, size: 1, capacity: 14, hp: 4, shields: 1, hitbox: 2.5 },
-  bastion: { slot: "hull", name: "Bastion Frame", icon: 0, energy: 0, size: 2, capacity: 18, hp: 6, shields: 2, hitbox: 3.5 },
-  gunwing: { slot: "wings", name: "Gunship Wings", icon: 1, energy: 2, style: 0, mains: 3, ords: 0, precision: 1.15 },
+  // Hulls: energy capacity is the fitting budget.
+  wasp: { slot: "hull", name: "Wasp Frame", icon: 0, energy: 0, size: 0, capacity: 9, hp: 2, shields: 1, hitbox: 1.5 },
+  falcon: { slot: "hull", name: "Falcon Frame", icon: 0, energy: 0, size: 1, capacity: 10, hp: 3, shields: 1, hitbox: 2.5 },
+  bastion: { slot: "hull", name: "Bastion Frame", icon: 0, energy: 0, size: 2, capacity: 14, hp: 5, shields: 1, hitbox: 3.5 },
+  // Wings: hardpoints. Trainer wings are the starter: one gun, one ordnance rail.
+  trainwing: { slot: "wings", name: "Trainer Wings", icon: 1, energy: 1, style: 1, mains: 1, ords: 1, precision: 1.0 },
   balwing: { slot: "wings", name: "Balanced Wings", icon: 1, energy: 2, style: 1, mains: 2, ords: 1, precision: 1.0 },
-  bomwing: { slot: "wings", name: "Bomber Wings", icon: 1, energy: 2, style: 2, mains: 1, ords: 3, precision: 0.9 },
-  sprint: { slot: "engine", name: "Sprint Thruster", icon: 2, energy: 1, power: 0, lat: 2.7, vert: 1.9 },
-  cruise: { slot: "engine", name: "Cruise Twin", icon: 2, energy: 2, power: 1, lat: 2.4, vert: 2.4 },
-  burner: { slot: "engine", name: "Afterburner Quad", icon: 2, energy: 4, power: 2, lat: 3.1, vert: 2.7 },
-  vulcan: { slot: "main", name: "Vulcan", icon: 3, energy: 2, weapon: "vulcan", amount: 3, spread: 22, damage: 4, rate: 12, speed: 9, pierce: 0 },
-  laser: { slot: "main", name: "Laser", icon: 4, energy: 3, weapon: "laser", amount: 1, spread: 0, damage: 2.6, rate: 22, speed: 13, pierce: 2 },
-  plasma: { slot: "main", name: "Plasma", icon: 5, energy: 4, weapon: "plasma", amount: 1, spread: 0, damage: 50, rate: 1, speed: 0, pierce: 0 },
-  dumbfire: { slot: "ord", name: "Dumbfire Rockets", icon: 6, energy: 2, weapon: "dumbfire", amount: 2, spread: 0, damage: 16, rate: 1.7, speed: 6, pierce: 0 },
-  homing: { slot: "ord", name: "Homing Missiles", icon: 7, energy: 3, weapon: "homing", amount: 2, spread: 0, damage: 9, rate: 1.9, speed: 4.5, pierce: 0 },
-  nuke: { slot: "bomb", name: "Nuke", icon: 8, energy: 1, bomb: "nuke", stock: 2 },
-  cluster: { slot: "bomb", name: "Cluster Bomb", icon: 8, energy: 1, bomb: "cluster", stock: 3 },
+  gunwing: { slot: "wings", name: "Gunship Wings", icon: 1, energy: 3, style: 0, mains: 3, ords: 0, precision: 1.15 },
+  bomwing: { slot: "wings", name: "Bomber Wings", icon: 1, energy: 3, style: 2, mains: 1, ords: 3, precision: 0.9 },
+  // Engines: lateral speed is the dodge axis.
+  sprint: { slot: "engine", name: "Sprint Thruster", icon: 2, energy: 1, power: 0, lat: 2.2, vert: 1.5 },
+  cruise: { slot: "engine", name: "Cruise Twin", icon: 2, energy: 1, power: 1, lat: 1.9, vert: 1.8 },
+  burner: { slot: "engine", name: "Afterburner Quad", icon: 2, energy: 3, power: 2, lat: 2.5, vert: 2.2 },
+  // Weapons.
+  vulcan: { slot: "main", name: "Vulcan", icon: 3, energy: 2, weapon: "vulcan", amount: 2, spread: 12, damage: 2.4, rate: 8, speed: 8, pierce: 0 },
+  laser: { slot: "main", name: "Laser", icon: 4, energy: 3, weapon: "laser", amount: 1, spread: 0, damage: 1.6, rate: 16, speed: 12, pierce: 1 },
+  plasma: { slot: "main", name: "Plasma", icon: 5, energy: 4, weapon: "plasma", amount: 1, spread: 0, damage: 20, rate: 1, speed: 0, pierce: 0 },
+  dumbfire: { slot: "ord", name: "Dumbfire Rockets", icon: 6, energy: 2, weapon: "dumbfire", amount: 1, spread: 0, damage: 10, rate: 1.2, speed: 6, pierce: 0 },
+  homing: { slot: "ord", name: "Homing Missiles", icon: 7, energy: 2, weapon: "homing", amount: 1, spread: 0, damage: 5, rate: 1.4, speed: 4.5, pierce: 0 },
+  // Bombs.
+  nuke: { slot: "bomb", name: "Nuke", icon: 8, energy: 1, bomb: "nuke", stock: 1 },
+  cluster: { slot: "bomb", name: "Cluster Bomb", icon: 8, energy: 1, bomb: "cluster", stock: 2 },
 };
 export const BASE_IDS = Object.keys(BASES);
 
@@ -87,7 +93,7 @@ const W: Slot[] = ["main", "ord"];
 export const AFFIXES: AffixDef[] = [
   // Weapon-local.
   { id: "amount", slots: W, weight: 10, stat: "amount", kind: "flat", prefix: "Hydra", suffix: "of Plenty",
-    roll: (r, l) => (r() < 0.03 ? 10 : irange(r, 1, l >= 15 ? 4 : l >= 6 ? 3 : 2)), text: (v) => `AMOUNT +${v}` },
+    roll: (r, l) => (r() < 0.03 ? (l >= 10 ? 10 : 4) : irange(r, 1, l >= 15 ? 4 : l >= 8 ? 3 : l >= 4 ? 2 : 1)), text: (v) => `AMOUNT +${v}` },
   { id: "damage", slots: W, weight: 10, stat: "damage", kind: "inc", prefix: "Searing", suffix: "of Ruin",
     roll: (r, l) => pct(r, 10, 40, l), text: (v) => `+${v}% DAMAGE` },
   { id: "rate", slots: W, weight: 10, stat: "rate", kind: "inc", prefix: "Rapid", suffix: "of Haste",
@@ -186,6 +192,9 @@ export interface Rolled {
   levelMul: number;
 }
 
+/** Base stats grow with item level: deeper levels drop stronger versions of the same bases. */
+export const levelMulFor = (ilvl: number) => 1 + 0.1 * (ilvl - 1);
+
 const RARE_A = ["Storm", "Ash", "Grim", "Iron", "Void", "Sun", "Rift", "Nova", "Dread", "Hex", "Blood", "Cinder", "Gale", "Bone"];
 const RARE_B = ["Talon", "Gyre", "Spire", "Fang", "Wake", "Song", "Brand", "Heart", "Shroud", "Coil", "Veil", "Maw", "Edge", "Crown"];
 
@@ -196,7 +205,7 @@ export function roll(item: Item): Rolled {
   const hit = rolledCache.get(key);
   if (hit) return { ...hit, item };
   const def = BASES[item.base];
-  const levelMul = 1 + 0.07 * (item.ilvl - 1);
+  const levelMul = levelMulFor(item.ilvl);
   let out: Rolled;
   if (item.rarity === Rarity.Unique && item.unique) {
     const u = UNIQUES.find((x) => x.id === item.unique)!;
@@ -240,15 +249,18 @@ let nextId = Date.now() % 1e9;
 export function setNextId(n: number) { nextId = Math.max(nextId, n); }
 export function newId() { return ++nextId; }
 
-export interface DropContext { ilvl: number; tier: number; bonusRarity?: number; slotBias?: Slot[] }
+export interface DropContext { ilvl: number; tier: number; depth: number; bonusRarity?: number; slotBias?: Slot[] }
 
 /** Roll a fresh item drop. */
 export function rollDrop(r: Rng, ctx: DropContext): Item {
+  // Deeper levels shift the odds toward rares; bosses add a bonus.
+  const D = ctx.depth;
+  const bonus = ctx.bonusRarity ?? 0;
   const rarity = weighted<Rarity>(r, [
-    [Rarity.Common, 60],
-    [Rarity.Magic, 32],
-    [Rarity.Rare, 9 + (ctx.bonusRarity ?? 0) * 10],
-    [Rarity.Unique, 0.9 + ctx.tier * 0.5 + (ctx.bonusRarity ?? 0) * 2],
+    [Rarity.Common, Math.max(20, 62 - D * 2.5)],
+    [Rarity.Magic, 30 + bonus * 6],
+    [Rarity.Rare, 5 + D * 1.3 + bonus * 6],
+    [Rarity.Unique, 0.4 + D * 0.2 + bonus * 0.8],
   ]);
   const seed = Math.floor(r() * 2 ** 31);
   if (rarity === Rarity.Unique) {
@@ -260,7 +272,7 @@ export function rollDrop(r: Rng, ctx: DropContext): Item {
   const base = weighted<string>(r, BASE_IDS.map((b) => {
     const s = BASES[b].slot;
     const w = s === "main" ? 5 : s === "ord" ? 4 : s === "bomb" ? 1.5 : 2.5;
-    return [b, ctx.slotBias?.includes(s) ? w * 2 : w];
+    return [b, (ctx.slotBias?.includes(s) ? w * 2 : w) * (b === "trainwing" ? 0.2 : 1)];
   }));
   return { id: newId(), base, ilvl: ctx.ilvl, rarity, seed };
 }

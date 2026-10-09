@@ -34,6 +34,11 @@ function tick() {
 
 // Dev-only hook for automated playtests in backgrounded tabs (no animation frames there).
 if (import.meta.env.DEV) {
+  // Hand tools the game's own module instances (a fresh import() from the console can get separate copies).
+  void Promise.all([
+    import("./game/save"), import("./game/stats"), import("./game/items"), import("./game/campaign"),
+    import("./scenes/scene"), import("./scenes/stage"),
+  ]).then(([S, ST, IT, C, scene, stage]) => ((window as any).dbg.mods = { S, ST, IT, C, scene, stage }));
   (window as any).dbg = {
     tick(n = 1) { for (let i = 0; i < n; i++) tick(); scene()?.draw(); },
     scene,

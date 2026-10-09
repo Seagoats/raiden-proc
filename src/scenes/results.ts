@@ -8,23 +8,32 @@ import { RARITY_COLOR, roll } from "../game/items";
 import type { World } from "../game/world";
 import { setScene, type Scene } from "./scene";
 import { drawIcon, panel, tierName } from "./common";
-import { HangarScene, newLoot } from "./hangar";
+import { newLoot } from "./hangar";
+import { MapScene } from "./map";
+import { LEVELS, biomeOf } from "../game/campaign";
 
 export class ResultsScene implements Scene {
   t = 0;
   clear: boolean;
-  unlockedNew = false;
+  unlockText = "";
   best = false;
 
   constructor(private w: World) {
     this.clear = w.done === "clear";
     profile.stash.push(...w.loot);
     w.loot.forEach((i) => newLoot.add(i.id));
-    const key = String(w.tier);
+    const key = `${w.level.id}.${w.tier}`;
     if (w.score > (profile.best[key] ?? 0)) { profile.best[key] = w.score; this.best = true; }
-    if (this.clear && profile.unlocked <= w.tier) {
-      profile.unlocked = w.tier + 1;
-      this.unlockedNew = true;
+    if (this.clear) {
+      if (w.tier === 0 && !profile.cleared.includes(w.level.id)) {
+        profile.cleared.push(w.level.id);
+        const next = LEVELS[w.level.index + 1];
+        if (!next) { profile.unlocked = Math.max(profile.unlocked, 1); this.unlockText = "HELL MODE UNLOCKED"; }
+        else if (next.biome !== w.level.biome) this.unlockText = `${biomeOf(next).name} UNLOCKED`;
+        else this.unlockText = `${next.id} ${next.name} UNLOCKED`;
+        profile.level = next ? next.id : w.level.id;
+      }
+      if (w.tier > 0 && profile.unlocked <= w.tier) { profile.unlocked = w.tier + 1; this.unlockText = `${tierName(w.tier + 1)} UNLOCKED`; }
     }
     save();
   }
@@ -38,7 +47,7 @@ export class ResultsScene implements Scene {
     this.t++;
     if (this.t > 40 && (pressed("ok") || pressed("back") || mouse.clicked)) {
       sfx("select");
-      setScene(new HangarScene());
+      setScene(new MapScene());
     }
   }
 
@@ -48,7 +57,7 @@ export class ResultsScene implements Scene {
     ctx.fillRect(0, 0, W, H);
     const title = this.clear ? "MISSION COMPLETE" : w.retreated ? "SORTIE ABORTED" : "SHOT DOWN";
     text(title, W / 2, 16, { align: "center", scale: 2, color: this.clear ? "#ffe040" : "#ff6060" });
-    text(`${tierName(w.tier)} - COASTAL LAUNCH`, W / 2, 38, { align: "center", color: "#a0c0ff" });
+    text(`${w.level.id} ${w.level.name}${w.tier ? "  " + tierName(w.tier) : ""}`, W / 2, 38, { align: "center", color: "#a0c0ff" });
     const rows: [string, string][] = [
       ["SCORE", String(w.score)],
       ["MAX CHAIN", String(w.maxChain)],
@@ -61,7 +70,7 @@ export class ResultsScene implements Scene {
       text(v, W - 60, 58 + i * 11, { align: "right" });
     });
     if (this.best && this.t > 50) text("NEW BEST!", W / 2, 104, { align: "center", color: "#ffe040" });
-    if (this.unlockedNew && this.t > 60) text(`${tierName(w.tier + 1)} UNLOCKED`, W / 2, 116, { align: "center", color: "#ff5050" });
+    if (this.unlockText && this.t > 60) text(this.unlockText, W / 2, 116, { align: "center", color: this.unlockText.startsWith("HELL") ? "#ff5050" : "#80ff80" });
 
     panel(12, 130, W - 24, H - 160);
     text(`LOOT RECOVERED: ${w.loot.length}`, 20, 136, { color: "#fff" });
@@ -75,6 +84,6 @@ export class ResultsScene implements Scene {
     });
     if (w.loot.length > shown.length) text(`+${w.loot.length - shown.length} MORE`, W / 2, H - 42, { align: "center", color: "#888" });
     if (w.loot.length === 0 && this.t > 70) text("NOTHING RECOVERED", W / 2, 180, { align: "center", color: "#666" });
-    if (this.t > 40 && Math.floor(this.t / 30) % 2 === 0) text("PRESS Z TO RETURN TO HANGAR", W / 2, H - 20, { align: "center", color: "#ffe040" });
+    if (this.t > 40 && Math.floor(this.t / 30) % 2 === 0) text("PRESS Z TO RETURN TO THE MAP", W / 2, H - 20, { align: "center", color: "#ffe040" });
   }
 }

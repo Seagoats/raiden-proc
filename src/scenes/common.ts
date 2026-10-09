@@ -3,6 +3,7 @@ import { ctx } from "../gfx/screen";
 import { text, wrap } from "../gfx/font";
 import { img } from "../gfx/assets";
 import { BASES, RARITY_COLOR, RARITY_NAME, roll, type Item } from "../game/items";
+import { engineSpeedMul, hullCapacity } from "../game/stats";
 
 export const tierName = (t: number) => (t === 0 ? "NORMAL" : `HELL ${t}`);
 
@@ -30,9 +31,9 @@ export function baseLines(item: Item): string[] {
   const d = r.def;
   const m = r.levelMul;
   const out: string[] = [];
-  if (d.slot === "hull") out.push(`ENERGY CAP ${d.capacity! + Math.floor((item.ilvl - 1) / 4)}`, `HITS ${d.hp}  SHIELDS ${d.shields}`, `HITBOX ${["TINY", "SMALL", "LARGE"][d.size!]}`);
+  if (d.slot === "hull") out.push(`ENERGY CAP ${hullCapacity(item)}`, `HITS ${d.hp}  SHIELDS ${d.shields}`, `HITBOX ${["TINY", "SMALL", "LARGE"][d.size!]}`);
   if (d.slot === "wings") out.push(`MAIN ${d.mains}  ORDNANCE ${d.ords}  BOMB 1`, `PRECISION x${d.precision}`);
-  if (d.slot === "engine") out.push(`LATERAL ${d.lat}  VERTICAL ${d.vert}`);
+  if (d.slot === "engine") out.push(`LATERAL ${(d.lat! * engineSpeedMul(item)).toFixed(2)}`, `VERTICAL ${(d.vert! * engineSpeedMul(item)).toFixed(2)}`);
   if (d.weapon) {
     if (d.weapon === "plasma") out.push(`${Math.round(d.damage! * m)} DPS PER STRAND`, `STRANDS ${d.amount}`);
     else out.push(`DMG ${(d.damage! * m).toFixed(1)}  RATE ${d.rate}/S`, `AMOUNT ${d.amount}${d.pierce ? `  PIERCE ${d.pierce}` : ""}`);

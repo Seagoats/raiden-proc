@@ -6,7 +6,8 @@ import { BULLET, BULLET_KINDS } from "../gfx/sprites";
 import { isHeld, pressed, repeat } from "../core/input";
 import { sfx, playSong } from "../core/audio";
 import { World, Shot, type Enemy, type Pickup } from "../game/world";
-import { drawBackground, setupStage } from "../game/stage1";
+import { drawBackground, setupLevel } from "../game/stagegen";
+import { biomeOf, levelById } from "../game/campaign";
 import { ENEMY_SHIP_KINDS, enemyShip } from "../game/enemies";
 import { profile, save, stashMap, syncOptions } from "../game/save";
 import { RARITY_COLOR } from "../game/items";
@@ -31,9 +32,10 @@ export class StageScene implements Scene {
     if (this.loading > 0) {
       if (--this.loading === 0) {
         // Generate this tier's Graftwing squadron up front.
-        for (const k of ENEMY_SHIP_KINDS) enemyShip(k, profile.tier);
-        this.w = new World({ tier: profile.tier, stash: stashMap(), loadout: profile.loadout, seed: (Date.now() & 0xffffff) ^ profile.sorties });
-        setupStage(this.w);
+        const level = levelById(profile.level);
+        for (const k of ENEMY_SHIP_KINDS) enemyShip(k, level.biome, profile.tier);
+        this.w = new World({ level, tier: profile.tier, stash: stashMap(), loadout: profile.loadout, seed: (Date.now() & 0xffffff) ^ profile.sorties });
+        setupLevel(this.w);
       }
       return;
     }
@@ -55,7 +57,7 @@ export class StageScene implements Scene {
 
   spawnClouds() {
     const w = this.w;
-    if (w.scrollSpeed <= 0) return;
+    if (w.scrollSpeed <= 0 || w.level.biome === 4) return;
     if (--this.cloudT <= 0) {
       this.cloudT = 240 + Math.floor(w.rng() * 300);
       const c = img[`clouds_${Math.floor(w.rng() * 5)}`];
@@ -119,7 +121,7 @@ export class StageScene implements Scene {
   drawShadows() {
     const w = this.w;
     ctx.globalAlpha = 0.3;
-    for (const e of w.enemies) if (e.air) ctx.drawImage(e.sprite.shadow, Math.round(e.x - e.sprite.w / 2 + 14), Math.round(e.y - e.sprite.h / 2 + 22));
+    for (const e of w.enemies) if (e.air && !e.s.hidden) ctx.drawImage(e.sprite.shadow, Math.round(e.x - e.sprite.w / 2 + 14), Math.round(e.y - e.sprite.h / 2 + 22));
     if (w.alive) {
       const off = 2 + w.lift * 14;
       const sh = w.ship;
@@ -129,6 +131,7 @@ export class StageScene implements Scene {
   }
 
   drawEnemy(e: Enemy) {
+    if (e.s.hidden) return;
     const s = e.sprite;
     const t = this.w.t;
     for (const a of e.affixes) {
@@ -323,17 +326,24 @@ export class StageScene implements Scene {
 
   drawTelegraphs() {
     const w = this.w;
+    // One telegraph language for every threat: an edge glow with an arrow pointing inward.
     for (const tg of w.telegraphs) {
       if (Math.floor(tg.t / 5) % 2) continue;
-      const g = ctx.createLinearGradient(0, 0, 0, 24);
+      const horiz = tg.dir === "left" || tg.dir === "right";
+      const [ex, ey] = tg.dir === "top" ? [tg.x, 0] : tg.dir === "bottom" ? [tg.x, H] : tg.dir === "left" ? [0, tg.y] : [W, tg.y];
+      const [ix, iy] = tg.dir === "top" ? [0, 1] : tg.dir === "bottom" ? [0, -1] : tg.dir === "left" ? [1, 0] : [-1, 0];
+      const g = ctx.createLinearGradient(ex, ey, ex + ix * 24, ey + iy * 24);
       g.addColorStop(0, "rgba(255,60,60,0.8)");
       g.addColorStop(1, "rgba(255,60,60,0)");
       ctx.fillStyle = g;
-      ctx.fillRect(tg.x - 24, 0, 48, 24);
+      if (horiz) ctx.fillRect(ix > 0 ? 0 : W - 24, tg.y - 24, 24, 48);
+      else ctx.fillRect(tg.x - 24, iy > 0 ? 0 : H - 24, 48, 24);
       ctx.fillStyle = "#fff";
-      for (let k = 0; k < 5; k++) ctx.fillRect(Math.round(tg.x - 4 + k), 4 + k, 9 - k * 2, 1);
-      ctx.fillStyle = "#ff4040";
-      ctx.fillRect(Math.round(tg.x - 1), 10, 3, 2);
+      for (let k = 0; k < 5; k++) {
+        const len = 9 - k * 2;
+        if (horiz) ctx.fillRect(Math.round(ex + ix * (4 + k)), Math.round(tg.y - 4 + k), 1, len);
+        else ctx.fillRect(Math.round(tg.x - 4 + k), Math.round(ey + iy * (4 + k)), len, 1);
+      }
     }
     if (w.bossWarning > 0 && Math.floor(w.bossWarning / 12) % 2 === 0) {
       ctx.fillStyle = "rgba(160,0,0,0.6)";
@@ -350,7 +360,7 @@ export class StageScene implements Scene {
     const w = this.w;
     text(String(w.score).padStart(8, "0"), 4, 3, { color: "#fff" });
     if (w.chain > 0) text(`CHAIN ${w.chain}`, W / 2, 3, { align: "center", color: "#ffd040" });
-    text(tierName(w.tier), W - 4, 3, { align: "right", color: w.tier ? "#ff6060" : "#a0c0ff" });
+    text(w.tier ? `${w.level.id} ${tierName(w.tier)}` : w.level.id, W - 4, 3, { align: "right", color: w.tier ? "#ff6060" : "#a0c0ff" });
     if (w.boss) {
       const b = w.boss;
       ctx.fillStyle = "#000"; ctx.fillRect(40, 14, W - 80, 6);
@@ -383,8 +393,9 @@ export class StageScene implements Scene {
     }
     if (w.phase === "launch" && w.phaseT < 100) {
       text("SORTIE", W / 2, H / 2 - 60, { align: "center", scale: 2, color: "#fff" });
-      text(`${tierName(w.tier)} - COASTAL LAUNCH`, W / 2, H / 2 - 40, { align: "center", color: "#a0c0ff" });
-      text("Z FIRE   X BOMB   SHIFT PRECISION", W / 2, H / 2 - 24, { align: "center", color: "#ccc" });
+      text(`${w.level.id}  ${w.level.name}`, W / 2, H / 2 - 40, { align: "center", color: "#a0c0ff" });
+      text(`${biomeOf(w.level).name}${w.tier ? "  -  " + tierName(w.tier) : ""}`, W / 2, H / 2 - 30, { align: "center", color: "#7080a0" });
+      text("Z FIRE   X BOMB   SHIFT PRECISION", W / 2, H / 2 - 16, { align: "center", color: "#ccc" });
     }
     if (w.phase === "clear" && w.phaseT > 120) text("MISSION COMPLETE", W / 2, H / 2 - 30, { align: "center", scale: 2, color: "#ffe040" });
     if (w.phase === "dead" && w.phaseT > 60) text("SHOT DOWN", W / 2, H / 2 - 30, { align: "center", scale: 2, color: "#ff6060" });

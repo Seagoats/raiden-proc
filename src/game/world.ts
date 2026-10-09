@@ -11,6 +11,7 @@ import { BULLET_R, BULLET_KINDS, buildPlayerShip, type BulletKind, type PlayerSh
 import { rollDrop, type Item, type Mod } from "./items";
 import { computeBuild, type Build, type Loadout, type WeaponStats } from "./stats";
 import type { EnemyDef } from "./enemies";
+import { biomeOf, difficulty, type Difficulty, type Level } from "./campaign";
 
 export const TICK = 60;
 
@@ -89,7 +90,7 @@ export interface Telegraph { x: number; y: number; t: number; dir: "top" | "left
 
 // ---------------------------------------------------------------- the world
 
-export interface WorldOpts { tier: number; stash: Map<number, Item>; loadout: Loadout; seed: number }
+export interface WorldOpts { level: Level; tier: number; stash: Map<number, Item>; loadout: Loadout; seed: number }
 
 export class World {
   rng: Rng;
@@ -136,10 +137,16 @@ export class World {
   hits = 0;
   boss: Enemy | null = null;
   bossName = "";
-  progress = 0;
+  level: Level;
+  diff: Difficulty;
   hpMul: number;
   density: number;
   bspeed: number;
+  fireMul: number;
+  speedMul: number;
+  lootLeft: number;
+  /** Depth scale for player-side numbers that should keep pace with enemies (split shots, bursts). */
+  power: number;
   events: { t: number; fn: (w: World) => void }[] = [];
   pending: { at: number; fn: () => void }[] = [];
   scrollEvents: { at: number; fn: () => void }[] = [];
@@ -151,9 +158,15 @@ export class World {
     this.tier = o.tier;
     this.stash = o.stash;
     this.loadout = o.loadout;
-    this.hpMul = o.tier === 0 ? 1 : 3 * 2 ** (o.tier - 1);
-    this.density = 1 + 0.3 * o.tier;
-    this.bspeed = 1 + 0.06 * o.tier;
+    this.level = o.level;
+    this.diff = difficulty(o.level, o.tier);
+    this.hpMul = this.diff.hpMul;
+    this.density = this.diff.density;
+    this.bspeed = this.diff.bspeed;
+    this.fireMul = this.diff.fireMul;
+    this.speedMul = this.diff.speedMul;
+    this.lootLeft = this.diff.lootBudget;
+    this.power = this.diff.hpMul;
     this.rebuild();
     this.hp = this.build.hp;
     this.shields = this.build.shields;
@@ -184,10 +197,11 @@ export class World {
       ...init,
     };
     // Hell tiers roll enemy affixes from the biome-twist pool.
-    if (this.tier > 0 && !def.boss && !def.noAffix && !init.parent) {
-      const chance = Math.min(0.12 * this.tier, 0.7) * (elite ? 1.5 : 1);
+    // Affixed enemies: taught in the sky fortress, everywhere in space and Hell.
+    if (this.diff.affixChance > 0 && !def.boss && !def.noAffix && !init.parent) {
+      const chance = this.diff.affixChance * (elite ? 1.5 : 1);
       const pool = ["armored", "revenge", "splitter", "relentless", "shielder"];
-      for (let i = 0; i < Math.min(this.tier, 3); i++) {
+      for (let i = 0; i < this.diff.maxAffixes; i++) {
         if (this.rng() < chance) {
           const a = pool[Math.floor(this.rng() * pool.length)];
           if (!e.affixes.includes(a) && !(a === "relentless" && !e.air)) e.affixes.push(a);
@@ -243,7 +257,6 @@ export class World {
     }
     while (this.scrollEvents.length && this.scrolled >= this.scrollEvents[0].at) this.scrollEvents.shift()!.fn();
     if (this.bossWarning > 0) this.bossWarning--;
-    this.progress = Math.min(1, this.launchEnd ? (this.t - this.launchEnd) / (110 * TICK) : 0);
     this.scrolled += this.scrollSpeed;
     if (this.phase === "launch") this.updateLaunch();
     else if (this.alive) this.updatePlayer();
@@ -275,8 +288,9 @@ export class World {
     const t = this.phaseT;
     this.focus = false;
     if (t < 100) {
-      // Unhurried: idle on the deck.
+      // Unhurried: idle on the deck. Without a carrier (orbit) the ship waits below the screen.
       if (carrier) { this.px = carrier.x + carrier.img.width / 2; this.py = carrier.y + carrier.img.height * 0.8; }
+      else { this.px = W / 2; this.py = H + 40; }
     } else {
       if (t === 100) sfx("launch");
       const k = Math.min(1, (t - 100) / 160);
@@ -380,7 +394,7 @@ export class World {
   firePlasma(w: WeaponStats, pts: { x: number; y: number }[], share: number) {
     const dps = (w.damage * w.rate) / TICK;
     const targets = this.enemies
-      .filter((e) => !e.dead && e.y > -10 && e.y < H && e.hp > 0)
+      .filter((e) => !e.dead && e.guard <= 0 && e.y > -10 && e.y < H && e.hp > 0)
       .sort((a, b) => Math.hypot(a.x - this.px, (a.y - this.py) * 0.6) - Math.hypot(b.x - this.px, (b.y - this.py) * 0.6));
     for (const pt of pts) {
       const x0 = this.px + pt.x, y0 = this.py + pt.y;
@@ -436,7 +450,7 @@ export class World {
     const B = this.bullets;
     for (let i = B.n - 1; i >= 0; i--) {
       if (Math.hypot(B.x[i] - x, B.y[i] - y) < r) {
-        if (medals) { this.score += 10 * (this.tier + 1); this.spark(B.x[i], B.y[i], "#ffd040", 1); }
+        if (medals) { this.score += Math.round(10 * this.power); this.spark(B.x[i], B.y[i], "#ffd040", 1); }
         else this.spark(B.x[i], B.y[i], "#ff9ac8", 1);
         B.kill(i);
       }
@@ -496,11 +510,13 @@ export class World {
       // Collide.
       const cell = this.grid.get(Math.floor(S.y[i] / 32) * 64 + Math.floor(S.x[i] / 32));
       if (!cell) continue;
-      for (const e of cell) {
-        if (e.dead || e.id === S.last[i]) continue;
-        const reach = k === Shot.Laser ? 7 : 0;
-        if (Math.abs(S.x[i] - e.x) > e.hw + 1 || Math.abs(S.y[i] - e.y) > e.hh + reach) continue;
-        if (e.affixes.includes("reflector") && e.t % 120 < 40) continue;
+      // Parts (boss turrets) sit inside their parent's hitbox: they take the hit first.
+      const reach = k === Shot.Laser ? 7 : 0;
+      const overlaps = (e: Enemy) =>
+        !e.dead && e.id !== S.last[i] && Math.abs(S.x[i] - e.x) <= e.hw + 1 && Math.abs(S.y[i] - e.y) <= e.hh + reach &&
+        !(e.affixes.includes("reflector") && e.t % 120 < 40);
+      const e = cell.find((c) => c.parent && overlaps(c)) ?? cell.find(overlaps);
+      if (e) {
         const eliteBonus = e.elite ? 1 + (S.c[i] % 1000) / 100 : 1;
         const split = Math.floor(S.c[i] / 1000);
         this.damage(e, S.a[i] * eliteBonus, split);
@@ -516,7 +532,6 @@ export class World {
         } else {
           S.kill(i);
         }
-        break;
       }
     }
   }
@@ -551,7 +566,7 @@ export class World {
     e.dead = true;
     this.kills++;
     const big = e.def.big || e.elite;
-    this.score += Math.round(e.def.score * (1 + this.tier));
+    this.score += Math.round(e.def.score * this.power);
     this.boom(e.x, e.y, big ? 1.4 : e.air ? 0.8 : 1);
     if (big) { this.shake = Math.max(this.shake, 5); sfx("boom"); for (let k = 0; k < 4; k++) this.boom(e.x + range(this.rng, -e.hw, e.hw), e.y + range(this.rng, -e.hh, e.hh), 0.7, k * 5); }
     else sfx("pop");
@@ -559,18 +574,24 @@ export class World {
     // Drops.
     if (e.carry) this.dropPickup(e.carry, e.x, e.y);
     if (e.def.medals) for (let k = 0; k < e.def.medals; k++) this.dropPickup("medal", e.x + (k - (e.def.medals - 1) / 2) * 10, e.y);
-    const lootChance = (e.def.loot ?? 0) * (this.tier > 0 ? 1.3 : 1);
-    let drops = Math.floor(lootChance) + (this.rng() < lootChance % 1 ? 1 : 0);
-    while (drops-- > 0) this.dropLoot(e.x, e.y, e.def.boss ? 1 : big ? 0.3 : 0);
+    // Loot is scarce: the level's guardian or boss always drops one item; elites have a small
+    // chance at one more while the budget allows (keeping room for the boss drop).
+    if (e.def.boss && this.lootLeft > 0) {
+      this.lootLeft--;
+      this.dropLoot(e.x, e.y, this.level.n === 3 ? 1 : 0.5);
+      // Sometimes you get lucky: a second item.
+      if (this.lootLeft > 0 && this.rng() < 0.25) { this.lootLeft--; this.dropLoot(e.x + 16, e.y, 0); }
+    }
+    else if (e.elite && !e.parent && this.lootLeft > 1 && this.rng() < this.diff.eliteLoot) { this.lootLeft--; this.dropLoot(e.x, e.y, 0.3); }
     // Split shots.
     if (split > 0) for (let k = 0; k < split; k++) {
       const a = (Math.PI * 2 * k) / split - Math.PI / 2;
-      this.addShot(e.x, e.y, Math.cos(a) * 6, Math.sin(a) * 6, Shot.Split, 3 * (1 + this.tier), 0, 0);
+      this.addShot(e.x, e.y, Math.cos(a) * 6, Math.sin(a) * 6, Shot.Split, 3 * this.power, 0, 0);
     }
     if (this.build.killburst > 0 && this.rng() * 100 < this.build.killburst) {
       for (let k = 0; k < 5; k++) {
         const a = -Math.PI / 2 + (k - 2) * 0.5;
-        this.addShot(e.x, e.y, Math.cos(a) * 3, Math.sin(a) * 3, Shot.Burst, 6 * (1 + this.tier * 0.8), 0, 0);
+        this.addShot(e.x, e.y, Math.cos(a) * 3, Math.sin(a) * 3, Shot.Burst, 6 * this.power, 0, 0);
       }
     }
     // Enemy affixes.
@@ -596,22 +617,25 @@ export class World {
   }
 
   dropLoot(x: number, y: number, bonus: number) {
-    const ilvl = this.tier === 0 ? 1 + Math.floor(this.progress * 4 + this.rng() * 2) : 4 + this.tier * 6 + Math.floor(this.rng() * 4);
-    const item = rollDrop(this.rng, { ilvl, tier: this.tier, bonusRarity: bonus });
+    const ilvl = this.diff.rollIlvl(this.rng);
+    const item = rollDrop(this.rng, { ilvl, tier: this.tier, depth: this.diff.D, bonusRarity: bonus });
     this.pickups.push({ kind: "loot", x, y, vx: range(this.rng, -0.8, 0.8), vy: -1.6, t: 0, item });
     sfx("drop");
   }
 
   rollDrafts(): Draft[] {
-    const big = this.tier >= 2 ? 2 : 1;
+    // Early drafts are modest; they grow with depth so late-game runs feel louder.
+    const D = this.diff.D;
+    const amt = D < 4 ? 1 : D < 10 ? 2 : 3;
+    const pct = (v: number) => Math.round(v * (D < 4 ? 0.6 : D < 10 ? 1 : 1.6));
     const pool: Draft[] = [
-      { label: `AMOUNT +${2 * big}`, mods: [{ stat: "amount", kind: "flat", value: 2 * big }] },
-      { label: `+${30 * big}% FIRE RATE`, mods: [{ stat: "rate", kind: "inc", value: 30 * big }] },
-      { label: `+${40 * big}% DAMAGE`, mods: [{ stat: "damage", kind: "inc", value: 40 * big }] },
+      { label: `AMOUNT +${amt}`, mods: [{ stat: "amount", kind: "flat", value: amt }] },
+      { label: `+${pct(30)}% FIRE RATE`, mods: [{ stat: "rate", kind: "inc", value: pct(30) }] },
+      { label: `+${pct(40)}% DAMAGE`, mods: [{ stat: "damage", kind: "inc", value: pct(40) }] },
       { label: "PIERCE +1", mods: [{ stat: "pierce", kind: "flat", value: 1 }] },
       { label: "+50% SPREAD", mods: [{ stat: "spread", kind: "inc", value: 50 }] },
       { label: "LASERS PIERCE +3", mods: [{ stat: "laser_pierce", kind: "flat", value: 3 }] },
-      { label: `MISSILES +${2 * big}`, mods: [{ stat: "missile_amount", kind: "flat", value: 2 * big }] },
+      { label: `MISSILES +${amt}`, mods: [{ stat: "missile_amount", kind: "flat", value: amt }] },
       { label: "SHIELD +1", mods: [{ stat: "shields", kind: "flat", value: 1 }], instant: (w) => w.shields++ },
       { label: "+15% SPEED", mods: [{ stat: "lat", kind: "inc", value: 15 }] },
       { label: "BOMB +1", mods: [], instant: (w) => w.bombs++ },
@@ -642,11 +666,13 @@ export class World {
         if (sp > 1.6) { e.vx *= 1.6 / sp; e.vy *= 1.6 / sp; }
         e.y = Math.min(e.y, H - 20);
       }
-      if (!e.anchor) { e.x += e.vx; e.y += e.vy; }
+      // Air units get faster deeper into the campaign; sea and ground units stay locked to the scroll.
+      const sp = e.air && !e.def.boss ? this.speedMul : 1;
+      if (!e.anchor) { e.x += e.vx * sp; e.y += e.vy * sp; }
       // Body collision with the player (air units only).
       if (e.air && this.alive && this.phase === "play" && Math.abs(e.x - this.px) < e.hw * 0.7 && Math.abs(e.y - this.py) < e.hh * 0.7) {
         this.hurt();
-        if (!e.def.boss) this.damage(e, 40 * (1 + this.tier), 0);
+        if (!e.def.boss) this.damage(e, 40 * this.power, 0);
       }
       const m = e.def.boss || e.affixes.includes("relentless") ? 400 : 60;
       if (e.y > H + m || e.y < -m * 3 || e.x < -m - 40 || e.x > W + m + 40) {
@@ -696,7 +722,7 @@ export class World {
       }
       if (this.build.flags.has("shieldburst")) for (let k = 0; k < 12; k++) {
         const a = (Math.PI * 2 * k) / 12;
-        this.addShot(this.px, this.py, Math.cos(a) * 3, Math.sin(a) * 3, Shot.Burst, 10 * (1 + this.tier), 0, 0);
+        this.addShot(this.px, this.py, Math.cos(a) * 3, Math.sin(a) * 3, Shot.Burst, 10 * this.power, 0, 0);
       }
       return;
     }
@@ -772,7 +798,7 @@ export class World {
         const v = k < 10 ? (k + 1) * 100 : Math.min(10000, (k - 9) * 1000 + 1000);
         this.chain++;
         this.maxChain = Math.max(this.maxChain, this.chain);
-        this.score += v * (1 + this.tier);
+        this.score += Math.round(v * this.power);
         this.text(p.x, p.y, `${v}`, "#ffd040");
         sfx("medal", k);
         break;
@@ -814,6 +840,6 @@ export class World {
   }
 
   seed(n: number) {
-    return hash(n, this.tier);
+    return hash(n, this.tier, this.level.index);
   }
 }

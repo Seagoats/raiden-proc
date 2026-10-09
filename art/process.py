@@ -138,5 +138,12 @@ if __name__ == "__main__":
     components("player_engines", lambda i, p: (eng_w[i], round(p.height * eng_w[i] / p.width * 0.75)), colors=14, out="pengine", sharpen=False)
     for k in range(1, 8):
         backdrop(f"bg_{k:02d}", 288, 432, 96)
+    for b in (2, 3, 4):
+        for k in range(1, 6):
+            # Cloud strips are near-white: darken them so enemy bullets keep their contrast.
+            backdrop(f"b{b}_{k:02d}", 288, 432, 96, darken=0.8 if b == 3 else 1.0)
+    backdrop("world_map", 288, 432, 96)
+    for n in ("boss_serpent", "boss_fortress", "boss_core"):
+        sprite(n, 190, 56)
     backdrop("title_art", 288, 384, 64)
     backdrop("hangar_bg", 288, 384, 48, darken=0.55)

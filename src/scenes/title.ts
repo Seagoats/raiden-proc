@@ -6,7 +6,7 @@ import { mouse, pressed, repeat } from "../core/input";
 import { sfx, playSong } from "../core/audio";
 import { resetProfile } from "../game/save";
 import { setScene, type Scene } from "./scene";
-import { HangarScene } from "./hangar";
+import { MapScene } from "./map";
 
 export class TitleScene implements Scene {
   t = 0;
@@ -25,7 +25,7 @@ export class TitleScene implements Scene {
       else if (mouse.y >= 316 && mouse.y < 332) this.menu = 1;
     }
     if (pressed("ok") || mouse.clicked) {
-      if (this.menu === 0) { sfx("confirm"); setScene(new HangarScene()); }
+      if (this.menu === 0) { sfx("confirm"); setScene(new MapScene()); }
       else if (!this.confirm) { this.confirm = true; sfx("deny"); }
       else { resetProfile(); this.confirm = false; this.menu = 0; sfx("bomb"); }
     }

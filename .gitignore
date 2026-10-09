@@ -9,3 +9,4 @@ art/.venv
 
 # Local-only music overrides (copyrighted, never committed or deployed)
 public/music-local/
+__pycache__/

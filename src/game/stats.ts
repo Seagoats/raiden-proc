@@ -58,6 +58,11 @@ export interface Build {
 
 const HUES = [0, 215, 130, 45, 280];
 
+/** Hull capacity grows a point every 3 item levels. */
+export const hullCapacity = (hull: Item) => BASES[hull.base].capacity! + Math.floor((hull.ilvl - 1) / 3);
+/** Engines get 2.5% faster per item level. */
+export const engineSpeedMul = (engine: Item) => 1 + 0.025 * (engine.ilvl - 1);
+
 class Layer {
   flat = new Map<string, number>();
   inc = new Map<string, number>();
@@ -133,7 +138,8 @@ export function computeBuild(stash: Map<number, Item>, lo: Loadout, run: RunMods
   }
 
   const hullR = hull ? roll(hull) : null;
-  const energyCap = hd ? hd.capacity! + Math.floor((hull!.ilvl - 1) / 4) : 0;
+  const engineMul = engine ? engineSpeedMul(engine) : 1;
+  const energyCap = hd ? hullCapacity(hull!) : 0;
   const complete = !!(hull && wings && engine);
   const hueSeed = hull ? hull.seed : 0;
   return {
@@ -145,8 +151,8 @@ export function computeBuild(stash: Map<number, Item>, lo: Loadout, run: RunMods
     shields: (hd?.shields ?? 0) + parts.f("shields") + runL.f("shields"),
     recharge: 12 / parts.i("recharge"),
     hitbox: hd?.hitbox ?? 2.5,
-    lat: (ed?.lat ?? 2.2) * parts.i("lat") * runL.i("lat"),
-    vert: (ed?.vert ?? 2.0) * parts.i("vert") * runL.i("lat"),
+    lat: (ed?.lat ?? 1.9) * engineMul * parts.i("lat") * runL.i("lat"),
+    vert: (ed?.vert ?? 1.8) * engineMul * parts.i("vert") * runL.i("lat"),
     precision: 1.05 * (wd?.precision ?? 1) * parts.i("precision"),
     weapons,
     bomb,

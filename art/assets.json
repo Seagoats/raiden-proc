@@ -1,0 +1,156 @@
+{
+ "style": "16-bit SNES-era pixel art in the style of Raiden DX, Aero Fighters and Super Aleste: crisp hand-placed pixels, limited palette, painterly pixel shading, strong top-left lighting, viewed from directly above (orthographic top-down). No text, no logos, no watermark, no UI.",
+ "keyed": "Centered on a perfectly flat solid pure magenta (#FF00FF) background that fills every empty area. No shadow, glow, gradient or texture on the background.",
+ "assets": [
+  {
+   "name": "carrier",
+   "size": "1024x1536",
+   "keyed": true,
+   "prompt": "A long grey naval aircraft carrier, bow pointing UP. Angled flight deck with white and yellow markings, island tower on the right side, radar domes, a few parked fighter jets on the left side deck, the bottom center catapult launch line is EMPTY (no aircraft on it). The carrier fills the frame vertically."
+  },
+  {
+   "name": "island_a",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A small tropical rocky island seen from above: sandy beach ring, white surf foam and turquoise shallow water halo around the edge, palm trees, rocky cliffs, a small concrete helipad and a radar post."
+  },
+  {
+   "name": "island_b",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A cluster of three small rocky sea stacks / islets seen from above, dark basalt rock with green moss tops, white foam where waves hit, turquoise shallow water halo around each."
+  },
+  {
+   "name": "island_c",
+   "size": "1536x1024",
+   "keyed": true,
+   "prompt": "A wide coastal island with a military harbor seen from above: concrete docks, fuel tanks, warehouses with red and grey roofs, a lighthouse, sandy beaches and turquoise shallow water halo around the coastline, jungle on the inland part."
+  },
+  {
+   "name": "reef",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A shallow coral reef and sandbar seen from above: pale sand, turquoise shallow water, coral patches, a half-sunken rusted ship wreck lying across the reef."
+  },
+  {
+   "name": "clouds",
+   "size": "1536x1024",
+   "keyed": true,
+   "prompt": "Five separate fluffy white and pale-lavender cumulus cloud puffs of different sizes, seen from above, soft pixel-art dithered shading, each cloud clearly separated from the others by magenta background."
+  },
+  {
+   "name": "boss_gunship",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A huge chunky armored flying battleship mini-boss for a shoot-em-up, nose pointing DOWN toward the bottom of the image. Heavy riveted olive-green and steel-grey armor plates, red warning stripes, four big jet engines with orange glow at the top (rear), two wide stubby wings, a central glowing red reactor core window, and FOUR EMPTY circular turret mounting rings (no turrets on them) arranged symmetrically on the deck. Symmetric left-right."
+  },
+  {
+   "name": "turrets",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A sprite sheet of six separate top-down gun turrets for a shoot-em-up, arranged in a 3x2 grid with lots of magenta space between them: twin-barrel cannon turret, single heavy cannon turret, missile pod turret, gatling turret, round dome flak turret, small triangular gun turret. All barrels point straight DOWN. Steel grey and olive armor with red accents."
+  },
+  {
+   "name": "gunboat",
+   "size": "1024x1024",
+   "keyed": true,
+   "prompt": "A small enemy military patrol gunboat on water seen from above, bow pointing DOWN, grey hull, a turret on the deck, white wake foam trailing behind it at the top. Only one boat."
+  },
+  {
+   "name": "destroyer",
+   "size": "1024x1536",
+   "keyed": true,
+   "prompt": "An enemy navy destroyer warship seen from above, bow pointing DOWN, dark steel grey hull with red deck accents, two gun turrets, a bridge tower, missile launchers, white wake foam at the stern (top). Only one ship, filling the frame vertically."
+  },
+  {
+   "name": "explosion",
+   "size": "1536x1024",
+   "keyed": true,
+   "prompt": "A sprite sheet showing an explosion animation as 8 separate frames in two rows of four, progressing from a small bright white-yellow flash, to a big orange fireball with dark red edges, to grey-brown smoke puffs dissipating. Each frame is clearly separated by magenta background."
+  },
+  {
+   "name": "icons",
+   "size": "1536x1024",
+   "keyed": true,
+   "prompt": "A sprite sheet of nine separate square equipment icons for a shoot-em-up hangar menu, in a 3x3 grid with magenta between them, each icon is a chunky beveled metal-framed tile: 1 fighter jet fuselage hull, 2 pair of swept wings, 3 jet engine nozzle, 4 gatling vulcan cannon, 5 laser emitter with blue beam, 6 green plasma coil, 7 straight missile, 8 homing missile with curved trail, 9 nuclear bomb with radiation symbol."
+  },
+  {
+   "name": "title_art",
+   "size": "1536x1024",
+   "keyed": false,
+   "prompt": "Dramatic SNES box-art style key art for a vertical shoot-em-up: a sleek fighter jet climbing away from an aircraft carrier over a deep blue ocean at sunrise, enemy squadrons and a huge armored flying gunship silhouette in the orange clouds above, sun glare. Leave the top third of the image as relatively calm sky for a title logo. Full bleed scene, no border."
+  },
+  {
+   "name": "hangar_bg",
+   "size": "1536x1024",
+   "keyed": false,
+   "prompt": "Interior of a military aircraft-carrier hangar bay seen from a slight top-down angle: dark steel walls, yellow-black hazard stripes on the floor, tool racks, missiles on carts, overhead lights, a large empty repair platform in the middle of the floor. Moody blue and amber lighting. Full bleed scene, no border."
+  },
+  {
+   "name": "player_hulls",
+   "size": "1536x1024",
+   "keyed": true,
+   "prompt": "A sprite sheet of three separate player fighter-jet FUSELAGES only (absolutely no wings, no engines), viewed from directly above, nose pointing UP, arranged left to right with wide magenta gaps between them: 1) a slim needle-nosed light fuselage with a small blue glass cockpit, 2) a medium armored fuselage with a bubble canopy and side intakes, 3) a wide heavy armored fuselage with a large canopy and thick armor plates. Each fuselage is long and vertical, about three times taller than wide. All parts share one consistent style and scale: clean white and light-grey armor plating, dark grey panel lines, a few bright pure-red accent panels (the red is used for team colors), dark outlines, strong top-left lighting. Each part is perfectly symmetric left-right."
+  },
+  {
+   "name": "player_wings",
+   "size": "1536x1024",
+   "keyed": true,
+   "prompt": "A sprite sheet of three separate pairs of player fighter WINGS only (absolutely no fuselage, no cockpit, no engines), viewed from directly above, leading edges toward the TOP, arranged left to right with wide magenta gaps: 1) compact forward-swept gunship wings with gun barrels near the roots, 2) classic swept delta wings, 3) very wide straight bomber wings with missile pylons underneath. Each pair is joined in the middle by a short flat center section where a fuselage will be placed on top. All parts share one consistent style and scale: clean white and light-grey armor plating, dark grey panel lines, a few bright pure-red accent panels (the red is used for team colors), dark outlines, strong top-left lighting. Each part is perfectly symmetric left-right."
+  },
+  {
+   "name": "player_engines",
+   "size": "1536x1024",
+   "keyed": true,
+   "prompt": "A sprite sheet of three separate rear engine assemblies for a player fighter jet (no fuselage, no wings), viewed from directly above, exhaust nozzles pointing DOWN with short bright blue-white thruster flames, arranged left to right with wide magenta gaps: 1) a single compact engine, 2) twin engines side by side, 3) four afterburner pods in a row. All parts share one consistent style and scale: clean white and light-grey armor plating, dark grey panel lines, a few bright pure-red accent panels (the red is used for team colors), dark outlines, strong top-left lighting. Each part is perfectly symmetric left-right."
+  },
+  {
+   "name": "bg_01",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "Calm deep-blue open ocean at morning with gentle rolling swells, a few distant whitecaps and sun sparkle, a couple of tiny rocky islets at the edges. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI."
+  },
+  {
+   "name": "bg_02",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "Ocean with a scattered chain of small rocky green islets with white surf, turquoise shallows around them, one small lighthouse on a rock. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI.",
+   "ref": "bg_01"
+  },
+  {
+   "name": "bg_03",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A large shallow coral reef and pale sandbars in the middle of the ocean, turquoise and teal water, a rusted shipwreck lying on the reef, coral patches. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI.",
+   "ref": "bg_01"
+  },
+  {
+   "name": "bg_04",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A lush tropical island in the center: sandy beaches, jungle canopy, a winding dirt road, a small fishing village with thatched huts and wooden piers, turquoise shallows. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI.",
+   "ref": "bg_01"
+  },
+  {
+   "name": "bg_05",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "An enemy naval base on an island: concrete docks and piers, grey warships moored at the docks, round fuel storage tanks, warehouses with red roofs, helipads, anti-aircraft gun emplacements, a runway strip. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI.",
+   "ref": "bg_01"
+  },
+  {
+   "name": "bg_06",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "A rugged rocky coastal fortress island: grey cliffs, a huge concrete bunker complex with gun turret emplacements, radar dishes, missile silos, roads winding through green hills, waves crashing on rocks. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI.",
+   "ref": "bg_01"
+  },
+  {
+   "name": "bg_07",
+   "size": "1024x1536",
+   "keyed": false,
+   "prompt": "Stormy dark ocean: deep navy and slate blue water with large whitecaps and foam streaks, ominous dark patches of cloud shadow, debris of floating wreckage, dramatic mood. Vertical-scrolling shoot-em-up stage background, seen from directly above (orthographic top-down), full bleed, portrait. IMPORTANT: the top 12% and bottom 12% of the image must be open deep-blue ocean water only (no land touching the top or bottom edge) so strips can be stacked seamlessly. Rich SNES-quality painterly pixel art like Raiden DX, Axelay and Super Aleste: dithered water with wave crests, detailed tiny buildings and vegetation, strong top-left lighting. No aircraft, no ships with wakes unless stated, no text, no UI.",
+   "ref": "bg_01"
+  }
+ ]
+}

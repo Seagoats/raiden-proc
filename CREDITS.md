@@ -13,4 +13,5 @@
   credit optional; the unaltered assets may not be sold or redistributed as standalone game assets. Only processed
   versions ship here (mono, 32 kHz, low-passed, trimmed, normalised by `art/sounds.py`), as part of the game.
   Used: explosions, pickups, coins, UI blips, warning alarm.
-- Weapon fire and music are synthesised at runtime (`src/core/audio.ts`).
+- **Stage music:** "Arcade Classics" by the project owner (made with Suno), `public/music/stage.mp3`.
+- Weapon fire and the remaining music (boss, hangar) are synthesised at runtime (`src/core/audio.ts`).

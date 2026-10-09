@@ -245,17 +245,26 @@ let timer = 0;
 let current: string | null = null;
 
 /**
- * Local-only music overrides: if public/music-local/<song>.mp3 exists (gitignored, never deployed), it replaces
- * the synth track. Lets licensed reference tracks be auditioned without shipping them.
+ * Recorded music. Each song resolves to the first file found: a local-only override in
+ * public/music-local/ (gitignored, never deployed, for reference tracks), then a shipped
+ * track in public/music/, then the built-in synth.
  */
-const LOCAL_SONGS = ["stage", "boss", "hangar"];
-const localTracks = new Set<string>();
+const SONG_FILES = ["stage", "boss", "hangar"];
+const trackUrl = new Map<string, string>();
+async function probe(url: string) {
+  try {
+    const r = await fetch(url, { method: "HEAD" });
+    return r.ok && (r.headers.get("content-type") ?? "").includes("audio");
+  } catch {
+    return false;
+  }
+}
 export function preloadMusic(): Promise<void> {
-  return Promise.all(LOCAL_SONGS.map((n) =>
-    fetch(`music-local/${n}.mp3`, { method: "HEAD" })
-      .then((r) => { if (r.ok && (r.headers.get("content-type") ?? "").includes("audio")) localTracks.add(n); })
-      .catch(() => {}),
-  )).then(() => undefined);
+  return Promise.all(SONG_FILES.map(async (n) => {
+    for (const dir of ["music-local", "music"]) {
+      if (await probe(`${dir}/${n}.mp3`)) { trackUrl.set(n, `${dir}/${n}.mp3`); return; }
+    }
+  })).then(() => undefined);
 }
 let local: { el: HTMLAudioElement; gain: GainNode } | null = null;
 
@@ -268,7 +277,7 @@ function stopLocal() {
 }
 
 function startLocal(name: string) {
-  const el = new Audio(`music-local/${name}.mp3`);
+  const el = new Audio(trackUrl.get(name)!);
   el.loop = true;
   const gain = ac!.createGain();
   gain.gain.value = 0.55; // Mastered tracks run much hotter than the synth.
@@ -285,7 +294,7 @@ export function playSong(name: string | null) {
   stopLocal();
   clearInterval(timer);
   song = null;
-  if (name && localTracks.has(name)) return startLocal(name);
+  if (name && trackUrl.has(name)) return startLocal(name);
   const s = name ? SONGS[name] : null;
   song = s;
   step = 0;

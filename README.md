@@ -50,8 +50,9 @@ Touch: drag anywhere to fly (auto-fire), tap with a second finger to bomb.
 - **Art:** the world map, all four areas' background strips, the carrier, four bosses, boats, turrets, explosions,
   icons, player parts and title art were generated with Codex (`art/assets.json` holds the prompts) and converted to 15-bit SNES palettes by `art/process.py`.
 
-- **Audio:** explosions, pickups and UI from Chequered Ink's 400 Sounds Pack, processed by `art/sounds.py`. Weapon fire
-  and music are a runtime chip synth. Attributions in [CREDITS.md](./CREDITS.md).
+- **Audio:** stage music is "Arcade Classics" (the project owner's track, made with Suno). Explosions, pickups and UI
+  come from Chequered Ink's 400 Sounds Pack, processed by `art/sounds.py`. Weapon fire and the boss/hangar music are a
+  runtime chip synth. Attributions in [CREDITS.md](./CREDITS.md).
 
 ## Development
 
@@ -68,6 +69,6 @@ Regenerating art needs the Codex CLI: `python3 art/gen.py [names...]` writes `ar
 `art/.venv/bin/python art/process.py` rebuilds `public/assets/` (`pip install pillow numpy scipy`).
 Audio: `python3 art/sounds.py <400 Sounds Pack.zip>` (needs ffmpeg) rebuilds `public/sfx/`.
 
-**Local music overrides:** drop `stage.mp3`, `boss.mp3` and/or `hangar.mp3` into `public/music-local/` to replace the
-synth tracks while running locally. That folder is gitignored and never deployed; use it for reference tracks you
+**Music:** shipped tracks live in `public/music/` (`stage.mp3`, `boss.mp3`, `hangar.mp3`; missing ones fall back to
+the synth). **Local overrides:** files with the same names in `public/music-local/` take priority while running locally. That folder is gitignored and never deployed; use it for reference tracks you
 don't have rights to ship.

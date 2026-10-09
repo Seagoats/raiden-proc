@@ -1,6 +1,6 @@
 /** Enemy types as data plus small behaviour functions. Fighters are Graftwing ships. */
 import { hash } from "../core/rng";
-import { sfx, playSong } from "../core/audio";
+import { sfx, playSong, voice } from "../core/audio";
 import { img } from "../gfx/assets";
 import { buildEnemyShip, toSprite, type EnemyLookSpec, type Sprite } from "../gfx/sprites";
 import { makeCanvas } from "../gfx/screen";
@@ -230,6 +230,7 @@ export const E: Record<string, EnemyDef> = {
       w.phase = "clear";
       w.phaseT = 0;
       playSong(null);
+      w.pending.push({ at: w.t + 160, fn: () => voice("v_complete", 3) });
     },
   },
   bturret: {

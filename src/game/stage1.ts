@@ -5,7 +5,7 @@
  */
 import { img } from "../gfx/assets";
 import { makeCanvas, W, H } from "../gfx/screen";
-import { sfx, playSong } from "../core/audio";
+import { sfx, playSong, voice } from "../core/audio";
 import { E } from "./enemies";
 import type { World } from "./world";
 
@@ -191,6 +191,6 @@ export function setupStage(w: World) {
     [92.0, (w) => swoops(w, 1, 6)], [96.0, (w) => zakoRow(w, 90, -1, 10)], [103.0, (w) => weavers(w, [80, 144, 208])],
   ];
   for (const [t, fn] of filler) s(t, fn);
-  s(106.0, (w) => { playSong(null); w.bossWarning = 150; sfx("warning"); });
+  s(106.0, (w) => { playSong(null); w.bossWarning = 150; sfx("warning"); w.pending.push({ at: w.t + 40, fn: () => voice("v_attack", 2) }); });
   s(109.0, (w) => w.spawn(E.boss, W / 2, -120));
 }

@@ -2,7 +2,7 @@
 import { ctx, W, H } from "../gfx/screen";
 import { text } from "../gfx/font";
 import { pressed, mouse } from "../core/input";
-import { sfx, playSong } from "../core/audio";
+import { sfx, playSong, voice, ambience } from "../core/audio";
 import { profile, save } from "../game/save";
 import { RARITY_COLOR, roll } from "../game/items";
 import type { World } from "../game/world";
@@ -31,7 +31,9 @@ export class ResultsScene implements Scene {
 
   enter() {
     playSong("hangar");
-    sfx(this.clear ? "draft" : "deny");
+    ambience(null);
+    if (!this.clear) sfx("jingle_fail");
+    if (this.best && this.w.score > 0) setTimeout(() => voice("v_highscore", 2), 900);
   }
 
   update() {

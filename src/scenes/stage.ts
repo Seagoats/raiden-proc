@@ -4,7 +4,7 @@ import { text } from "../gfx/font";
 import { img } from "../gfx/assets";
 import { BULLET, BULLET_KINDS } from "../gfx/sprites";
 import { isHeld, pressed, repeat } from "../core/input";
-import { sfx, playSong } from "../core/audio";
+import { sfx, playSong, ambience } from "../core/audio";
 import { World, Shot, type Enemy, type Pickup } from "../game/world";
 import { drawBackground, setupStage } from "../game/stage1";
 import { ENEMY_SHIP_KINDS, enemyShip } from "../game/enemies";
@@ -25,6 +25,7 @@ export class StageScene implements Scene {
 
   enter() {
     playSong(null);
+    ambience("amb_sea", 0.45);
   }
 
   update() {
@@ -82,6 +83,7 @@ export class StageScene implements Scene {
       if (this.menu === 4) { this.w.done = "failed"; this.w.retreated = true; this.paused = false; }
     }
     if (pressed("back")) this.paused = false;
+    if (!this.paused) sfx("select");
   }
 
   // ------------------------------------------------------------ drawing
@@ -383,6 +385,7 @@ export class StageScene implements Scene {
     if (w.phase === "launch" && w.phaseT < 100) {
       text("SORTIE", W / 2, H / 2 - 60, { align: "center", scale: 2, color: "#fff" });
       text(`${tierName(w.tier)} - COASTAL LAUNCH`, W / 2, H / 2 - 40, { align: "center", color: "#a0c0ff" });
+      text("Z FIRE   X BOMB   SHIFT PRECISION", W / 2, H / 2 - 24, { align: "center", color: "#ccc" });
     }
     if (w.phase === "clear" && w.phaseT > 120) text("MISSION COMPLETE", W / 2, H / 2 - 30, { align: "center", scale: 2, color: "#ffe040" });
     if (w.phase === "dead" && w.phaseT > 60) text("SHOT DOWN", W / 2, H / 2 - 30, { align: "center", scale: 2, color: "#ff6060" });

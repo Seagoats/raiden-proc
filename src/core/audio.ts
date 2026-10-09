@@ -23,6 +23,105 @@ export function unlock() {
   const d = noiseBuf.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   if (pendingSong) playSong(pendingSong);
+  decodeSamples();
+  if (pendingAmb) ambience(pendingAmb);
+}
+
+// ---------------------------------------------------------------- samples (free packs, see CREDITS.md)
+
+const SAMPLE_NAMES = [
+  "pop", "boom", "bigboom", "blast", "pickup", "bombup", "draft", "medal", "loot", "lootrare", "hurt", "shield",
+  "select", "move", "deny", "confirm", "equip", "scrap", "alarm", "whoosh", "jingle_start", "jingle_clear", "jingle_fail",
+  "v_getready", "v_letsgo", "v_yougotit", "v_enemy", "v_attack", "v_lowhp", "v_complete", "v_gameover", "v_highscore",
+  "v_negative", "v_welcome", "p_woo", "p_hit1", "p_hit2", "p_hit3", "p_death", "amb_sea", "amb_hangar",
+] as const;
+export type SampleName = (typeof SAMPLE_NAMES)[number];
+const raw = new Map<string, ArrayBuffer>();
+const buffers = new Map<string, AudioBuffer>();
+/** How many samples are decoded and ready (diagnostics). */
+export const loadedSamples = () => buffers.size;
+
+/** Fetch every sample up front (no AudioContext needed); decode once audio is unlocked. */
+export function preloadSamples(): Promise<void> {
+  return Promise.all(SAMPLE_NAMES.map((n) =>
+    fetch(`sfx/${n}.mp3`).then((r) => (r.ok ? r.arrayBuffer() : null)).then((b) => { if (b) raw.set(n, b); }).catch(() => {}),
+  )).then(() => { if (ac) decodeSamples(); });
+}
+
+function decodeSamples() {
+  if (!ac) return;
+  for (const [n, b] of raw) {
+    raw.delete(n);
+    ac.decodeAudioData(b).then((buf) => { buffers.set(n, buf); if (n === pendingAmb) ambience(pendingAmb); }).catch(() => {});
+  }
+}
+
+function play(name: string, opts: { rate?: number; vol?: number; bus?: GainNode; when?: number } = {}): AudioBufferSourceNode | null {
+  const buf = ac && buffers.get(name);
+  if (!ac || !buf) return null;
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  src.playbackRate.value = opts.rate ?? 1;
+  const g = ac.createGain();
+  g.gain.value = opts.vol ?? 1;
+  src.connect(g).connect(opts.bus ?? sfxBus);
+  src.start(opts.when ?? ac.currentTime);
+  return src;
+}
+
+/** Radio voice: squelch clicks, ducked music, one line at a time (higher priority interrupts). */
+let voiceUntil = 0;
+let voicePri = 0;
+let voiceSrc: AudioBufferSourceNode | null = null;
+export function voice(name: SampleName, priority = 1, radio = name.startsWith("v_")) {
+  if (!ac || !buffers.get(name)) return;
+  const t = ac.currentTime;
+  if (t < voiceUntil && priority <= voicePri) return;
+  try { voiceSrc?.stop(); } catch { /* already stopped */ }
+  const dur = buffers.get(name)!.duration;
+  const start = t + (radio ? 0.06 : 0);
+  if (radio) {
+    noise(sfxBus, t, 0.05, 0.12, "bandpass", 2500, 2500, 2);
+    noise(sfxBus, start + dur, 0.07, 0.1, "bandpass", 1800, 1800, 2);
+  }
+  voiceSrc = play(name, { vol: radio ? 1.1 : 0.9, when: start });
+  voiceUntil = start + dur + 0.1;
+  voicePri = priority;
+  // Duck the music under the line.
+  musicBus.gain.cancelScheduledValues(t);
+  musicBus.gain.setTargetAtTime(volume.music * 0.18, t, 0.05);
+  musicBus.gain.setTargetAtTime(volume.music * 0.5, voiceUntil, 0.25);
+}
+
+/** Looping ambience bed with a crossfade. */
+let ambSrc: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+let ambName: string | null = null;
+let pendingAmb: SampleName | null = null;
+export function ambience(name: SampleName | null, vol = 0.55) {
+  pendingAmb = name;
+  if (!ac || name === ambName && ambSrc) return;
+  const t = ac.currentTime;
+  if (ambSrc) {
+    const old = ambSrc;
+    old.gain.gain.setTargetAtTime(0, t, 0.4);
+    setTimeout(() => { try { old.src.stop(); } catch { /* done */ } }, 2500);
+    ambSrc = null;
+  }
+  ambName = null;
+  const buf = name && buffers.get(name);
+  if (!buf) return;
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  src.loopStart = 0.03;
+  src.loopEnd = buf.duration - 0.03;
+  const gain = ac.createGain();
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.setTargetAtTime(vol, t, 0.5);
+  src.connect(gain).connect(sfxBus);
+  src.start(t);
+  ambSrc = { src, gain };
+  ambName = name;
 }
 window.addEventListener("keydown", unlock);
 window.addEventListener("mousedown", unlock);
@@ -70,16 +169,57 @@ function noise(bus: GainNode, t0: number, dur: number, vol: number, filter: Biqu
 
 export type Sfx =
   | "shot" | "laser" | "missile" | "hit" | "pop" | "boom" | "bigboom" | "pickup" | "medal" | "drop"
-  | "loot" | "draft" | "bomb" | "warning" | "hurt" | "shield" | "select" | "move" | "cue" | "deny" | "launch";
+  | "loot" | "draft" | "bomb" | "warning" | "hurt" | "shield" | "select" | "move" | "cue" | "deny" | "launch"
+  | "confirm" | "equip" | "scrap" | "bombup" | "blast" | "jingle_start" | "jingle_clear" | "jingle_fail";
+
+/** Which sound effects come from samples; anything missing falls back to the synth. */
+function sampled(name: Sfx, p: number, t: number): boolean {
+  switch (name) {
+    case "pop": return !!play("pop", { vol: 0.55, rate: 0.9 + Math.random() * 0.25 });
+    case "boom": return !!play("boom", { vol: 0.8 });
+    case "bigboom": return !!play("bigboom", { vol: 1 });
+    case "blast": return !!play("blast", { vol: 0.35, rate: 1 + Math.random() * 0.3 });
+    case "pickup": return !!play("pickup", { vol: 0.7 });
+    case "bombup": return !!play("bombup", { vol: 0.7 });
+    case "draft": return !!play("draft", { vol: 0.8 });
+    case "medal": return !!play("medal", { vol: 0.5, rate: 1 + Math.min(p, 24) * 0.035 });
+    case "loot": {
+      const ok = !!play(p >= 2 ? "lootrare" : "loot", { vol: p >= 2 ? 0.9 : 0.6, rate: p === 1 ? 1.15 : 1 });
+      if (p >= 3) play("lootrare", { vol: 0.7, rate: 1.5, when: t + 0.12 });
+      return ok;
+    }
+    case "hurt": return !!play("hurt", { vol: 0.9 });
+    case "shield": return !!play("shield", { vol: 0.8 });
+    case "select": return !!play("select", { vol: 0.5 });
+    case "move": return !!play("move", { vol: 0.35 });
+    case "deny": return !!play("deny", { vol: 0.6 });
+    case "confirm": return !!play("confirm", { vol: 0.7 });
+    case "equip": return !!play("equip", { vol: 0.7 });
+    case "scrap": return !!play("scrap", { vol: 0.6 });
+    case "warning": {
+      const ok = !!play("alarm", { vol: 0.7 });
+      if (ok) for (let i = 1; i < 3; i++) play("alarm", { vol: 0.7, when: t + i * 0.9 });
+      return ok;
+    }
+    case "bomb": {
+      const ok = !!play("whoosh", { vol: 0.9, rate: 0.7 });
+      if (ok) { play("bigboom", { vol: 1, rate: 0.8, when: t + 0.62 }); tone(sfxBus, "sine", 70, 25, t + 0.6, 1.5, 0.6); }
+      return ok;
+    }
+    case "jingle_start": case "jingle_clear": case "jingle_fail": return !!play(name, { vol: 0.8 });
+    default: return false;
+  }
+}
 
 const last = new Map<string, number>();
 /** Play a sound effect. `p` is an optional parameter (medal chain, loot rarity). */
 export function sfx(name: Sfx, p = 0) {
   if (!ac) return;
   const t = ac.currentTime;
-  const gap = { shot: 0.07, laser: 0.09, hit: 0.04, pop: 0.03, missile: 0.08 }[name as string] ?? 0;
+  const gap = { shot: 0.07, laser: 0.09, hit: 0.04, pop: 0.04, missile: 0.08, blast: 0.06, medal: 0.03, boom: 0.05 }[name as string] ?? 0;
   if (gap && t - (last.get(name) ?? 0) < gap) return;
   last.set(name, t);
+  if (sampled(name, p, t)) return;
   const B = sfxBus;
   switch (name) {
     case "shot": tone(B, "square", 1400, 700, t, 0.04, 0.035); break;
@@ -104,7 +244,11 @@ export function sfx(name: Sfx, p = 0) {
     case "move": tone(B, "square", 660, 660, t, 0.03, 0.04); break;
     case "cue": tone(B, "square", 1200, 1200, t, 0.06, 0.07); tone(B, "square", 1200, 1200, t + 0.12, 0.06, 0.07); break;
     case "deny": tone(B, "square", 200, 150, t, 0.15, 0.08); break;
-    case "launch": noise(B, t, 2.2, 0.25, "bandpass", 200, 3000, 0.7); tone(B, "sawtooth", 80, 400, t, 2.0, 0.05, 0.8); break;
+    case "launch": noise(B, t, 2.2, 0.25, "bandpass", 200, 3000, 0.7); tone(B, "sawtooth", 80, 400, t, 2.0, 0.05, 0.8); play("whoosh", { vol: 0.6, rate: 0.6, when: t + 0.3 }); break;
+    case "confirm": case "equip": tone(B, "square", 880, 880, t, 0.05, 0.06); tone(B, "square", 1320, 1320, t + 0.05, 0.08, 0.06); break;
+    case "scrap": noise(B, t, 0.2, 0.2, "bandpass", 1200, 600, 3); break;
+    case "bombup": [0, 4, 7, 12].forEach((n, i) => tone(B, "triangle", 392 * 2 ** (n / 12), 392 * 2 ** (n / 12), t + i * 0.04, 0.08, 0.1)); break;
+    case "blast": noise(B, t, 0.15, 0.1, "lowpass", 2000, 300); break;
   }
 }
 

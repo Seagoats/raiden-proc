@@ -3,7 +3,7 @@ import { ctx, W, H } from "../gfx/screen";
 import { text } from "../gfx/font";
 import { img } from "../gfx/assets";
 import { mouse, pressed, repeat } from "../core/input";
-import { sfx, playSong } from "../core/audio";
+import { sfx, playSong, voice, ambience } from "../core/audio";
 import { buildPlayerShip, type PlayerShipSprite } from "../gfx/sprites";
 import { profile, save, stashMap } from "../game/save";
 import { BASES, RARITY_COLOR, roll, type Item, type Slot } from "../game/items";
@@ -15,6 +15,7 @@ import { drawIcon, itemCard, panel, tierName } from "./common";
 
 /** Items picked up in the last sortie, flagged NEW until viewed. */
 export const newLoot = new Set<number>();
+let welcomed = false;
 
 interface SlotRow { label: string; slot: Slot; key: "hull" | "wings" | "engine" | "bomb" | "main" | "ord"; index: number }
 const SLOTS: SlotRow[] = [
@@ -49,6 +50,8 @@ export class HangarScene implements Scene {
 
   enter() {
     playSong("hangar");
+    ambience("amb_hangar", 0.5);
+    if (!welcomed) { welcomed = true; setTimeout(() => voice("v_welcome"), 400); }
     this.refresh();
   }
 
@@ -165,9 +168,10 @@ export class HangarScene implements Scene {
 
   sortie() {
     if (!this.build.complete) { sfx("deny"); this.flash("FIT A HULL, WINGS AND ENGINE"); return; }
-    if (!this.build.valid) { sfx("deny"); this.flash("OVER ENERGY BUDGET"); return; }
+    if (!this.build.valid) { sfx("deny"); voice("v_negative"); this.flash("OVER ENERGY BUDGET"); return; }
     if (this.build.weapons.length === 0) { sfx("deny"); this.flash("MOUNT AT LEAST ONE WEAPON"); return; }
-    sfx("launch");
+    sfx("confirm");
+    voice("v_yougotit", 2);
     newLoot.clear();
     setScene(new StageScene());
   }
@@ -193,7 +197,7 @@ export class HangarScene implements Scene {
     if (item) newLoot.delete(item.id);
     if (pressed("ok") || clicked) {
       this.setEquipped(SLOTS[this.cursor], item ? item.id : null);
-      sfx("select");
+      sfx("equip");
       this.mode = "slots";
       if (!this.build.valid && this.build.complete) this.flash("OVER ENERGY BUDGET");
     }
@@ -202,7 +206,7 @@ export class HangarScene implements Scene {
       else {
         profile.stash = profile.stash.filter((i) => i.id !== item.id);
         save();
-        sfx("pop");
+        sfx("scrap");
         this.flash("SCRAPPED");
         this.stashCursor = Math.min(this.stashCursor, list.length - 2);
       }

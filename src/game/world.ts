@@ -5,7 +5,7 @@
  */
 import { hash, mulberry32, range, type Rng } from "../core/rng";
 import { isHeld, pressed, touch } from "../core/input";
-import { sfx } from "../core/audio";
+import { sfx, voice, ambience } from "../core/audio";
 import { W, H } from "../gfx/screen";
 import { BULLET_R, BULLET_KINDS, buildPlayerShip, type BulletKind, type PlayerShipSprite, type Sprite } from "../gfx/sprites";
 import { rollDrop, type Item, type Mod } from "./items";
@@ -208,9 +208,11 @@ export class World {
     this.events.push({ t: Math.round(seconds * TICK), fn });
   }
 
+  warnedOnce = false;
   warn(x: number, y: number, dir: Telegraph["dir"]) {
     this.telegraphs.push({ x, y, t: 0, dir });
     sfx("cue");
+    if (!this.warnedOnce) { this.warnedOnce = true; voice("v_enemy"); }
   }
 
   // ------------------------------------------------------------ enemy fire
@@ -263,6 +265,7 @@ export class World {
     for (const tg of this.telegraphs) tg.t++;
     this.telegraphs = this.telegraphs.filter((tg) => tg.t < 50);
     if (this.shake > 0) this.shake *= 0.88;
+    if (this.phase === "clear" && this.phaseT === 120) sfx("jingle_clear");
     if (this.phase === "clear" && this.phaseT > 300 && !this.done) {
       // Sweep up any loot still on screen.
       for (const p of this.pickups) if (p.kind === "loot") this.collect(p);
@@ -278,11 +281,13 @@ export class World {
     const carrier = this.bg.find((b) => b.layer === "sea" && b.speed === 1 && (b as any).carrier);
     const t = this.phaseT;
     this.focus = false;
+    if (t === 8) sfx("jingle_start");
+    if (t === 55) voice("v_getready");
     if (t < 100) {
       // Unhurried: idle on the deck.
       if (carrier) { this.px = carrier.x + carrier.img.width / 2; this.py = carrier.y + carrier.img.height * 0.8; }
     } else {
-      if (t === 100) sfx("launch");
+      if (t === 100) { sfx("launch"); voice("v_letsgo"); }
       const k = Math.min(1, (t - 100) / 160);
       this.scrollSpeed = this.scrollTarget * k;
       this.lift = Math.min(1, (t - 100) / 120);
@@ -292,6 +297,7 @@ export class World {
         this.phase = "play";
         this.phaseT = 0;
         this.launchEnd = this.t;
+        ambience(null);
       }
     }
   }
@@ -511,6 +517,7 @@ export class World {
         if (k === Shot.Dumbfire) {
           for (const o of this.enemies) if (o !== e && Math.hypot(o.x - S.x[i], o.y - S.y[i]) < 20) this.damage(o, S.a[i] * 0.5, 0);
           this.boom(S.x[i], S.y[i], 0.35);
+          sfx("blast");
         } else this.spark(S.x[i], S.y[i] - 2, k === Shot.Laser ? "#9ef" : "#ffe", 2);
         if (S.b[i] >= 1) {
           S.b[i]--;
@@ -707,6 +714,8 @@ export class World {
     this.inv = 160;
     this.shake = 8;
     sfx("hurt");
+    if (this.hp > 0) voice((["p_hit1", "p_hit2", "p_hit3"] as const)[this.hits % 3], 2);
+    if (this.hp === 1) this.pending.push({ at: this.t + 50, fn: () => voice("v_lowhp", 2) });
     this.clearBullets(this.px, this.py, 50, false);
     // Lite Raiden death penalty: a hull hit costs one P level.
     if (this.p > 1) { this.p--; this.rebuild(); }
@@ -716,6 +725,8 @@ export class World {
       this.phaseT = 0;
       for (let k = 0; k < 8; k++) this.boom(this.px + range(this.rng, -16, 16), this.py + range(this.rng, -16, 16), 1, k * 6);
       sfx("bigboom");
+      voice("p_death", 3);
+      this.pending.push({ at: this.t + 100, fn: () => voice("v_gameover", 3) });
     }
   }
 
@@ -759,7 +770,7 @@ export class World {
       case "B":
         this.bombs++;
         this.text(p.x, p.y, "BOMB", "#8f8");
-        sfx("pickup");
+        sfx("bombup");
         break;
       case "D": {
         const d = p.drafts![Math.floor(p.t / 50) % 3];
@@ -784,6 +795,7 @@ export class World {
         this.loot.push(p.item!);
         this.text(p.x, p.y, "LOOT", ["#ddd", "#79f", "#fe5", "#f93"][p.item!.rarity]);
         sfx("loot", p.item!.rarity);
+        if (p.item!.rarity >= 2) voice("p_woo");
         break;
     }
   }

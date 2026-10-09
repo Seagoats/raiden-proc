@@ -300,15 +300,54 @@ let step = 0;
 let nextTime = 0;
 let timer = 0;
 
+let current: string | null = null;
+
+/**
+ * Local-only music overrides: if public/music-local/<song>.mp3 exists (gitignored, never deployed), it replaces
+ * the synth track. Lets licensed reference tracks be auditioned without shipping them.
+ */
+const LOCAL_SONGS = ["stage", "boss", "hangar"];
+const localTracks = new Set<string>();
+export function preloadMusic(): Promise<void> {
+  return Promise.all(LOCAL_SONGS.map((n) =>
+    fetch(`music-local/${n}.mp3`, { method: "HEAD" })
+      .then((r) => { if (r.ok && (r.headers.get("content-type") ?? "").includes("audio")) localTracks.add(n); })
+      .catch(() => {}),
+  )).then(() => undefined);
+}
+let local: { el: HTMLAudioElement; gain: GainNode } | null = null;
+
+function stopLocal() {
+  if (!local || !ac) return;
+  const { el, gain } = local;
+  gain.gain.setTargetAtTime(0, ac.currentTime, 0.15);
+  setTimeout(() => el.pause(), 800);
+  local = null;
+}
+
+function startLocal(name: string) {
+  const el = new Audio(`music-local/${name}.mp3`);
+  el.loop = true;
+  const gain = ac!.createGain();
+  gain.gain.value = 0.55; // Mastered tracks run much hotter than the synth.
+  ac!.createMediaElementSource(el).connect(gain).connect(musicBus);
+  el.play().catch(() => {});
+  local = { el, gain };
+}
+
 export function playSong(name: string | null) {
   pendingSong = name;
   if (!ac) return;
+  if (name === current) return;
+  current = name;
+  stopLocal();
+  clearInterval(timer);
+  song = null;
+  if (name && localTracks.has(name)) return startLocal(name);
   const s = name ? SONGS[name] : null;
-  if (s === song) return;
   song = s;
   step = 0;
   nextTime = ac.currentTime + 0.1;
-  clearInterval(timer);
   if (s) timer = window.setInterval(schedule, 25);
 }
 

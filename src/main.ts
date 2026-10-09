@@ -4,7 +4,7 @@ import { text } from "./gfx/font";
 import { loadAssets } from "./gfx/assets";
 import { poll, endTick } from "./core/input";
 import { syncOptions } from "./game/save";
-import { preloadSamples } from "./core/audio";
+import { preloadMusic, preloadSamples } from "./core/audio";
 import { scene, setScene } from "./scenes/scene";
 import { TitleScene } from "./scenes/title";
 
@@ -63,7 +63,7 @@ async function boot() {
     ctx.fillRect(64, H / 2, (W - 128) * f, 6);
   };
   bar(0);
-  await Promise.all([loadAssets(bar), preloadSamples()]);
+  await Promise.all([loadAssets(bar), preloadSamples(), preloadMusic()]);
   setScene(new TitleScene());
   requestAnimationFrame(frame);
 }

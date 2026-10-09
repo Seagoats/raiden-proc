@@ -6,3 +6,6 @@ art/raw
 art/*.log
 art/.venv
 .snaps
+
+# Local-only music overrides (copyrighted, never committed or deployed)
+public/music-local/

@@ -60,3 +60,7 @@ Regenerating art needs the Codex CLI: `python3 art/gen.py [names...]` writes `ar
 `art/.venv/bin/python art/process.py` rebuilds `public/assets/` (`pip install pillow numpy scipy`).
 Audio: `python3 art/sounds.py <400 Sounds Pack.zip> <Super Dialogue Audio Pack v1.zip> <Essentials_Series_NOX_SOUND.zip>`
 (needs ffmpeg) rebuilds `public/sfx/`.
+
+**Local music overrides:** drop `stage.mp3`, `boss.mp3` and/or `hangar.mp3` into `public/music-local/` to replace the
+synth tracks while running locally. That folder is gitignored and never deployed; use it for reference tracks you
+don't have rights to ship.
